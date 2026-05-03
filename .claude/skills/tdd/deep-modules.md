@@ -1,33 +1,33 @@
-# Deep Modules
+# Modulos Profundos
 
-From "A Philosophy of Software Design":
+De "A Philosophy of Software Design":
 
-**Deep module** = small interface + lots of implementation
+**Modulo profundo** = interfaz pequena + mucha implementacion
 
 ```
 ┌─────────────────────┐
-│   Small Interface   │  ← Few methods, simple params
+│  Interfaz pequena   │  ← Pocos metodos, parametros simples
 ├─────────────────────┤
 │                     │
 │                     │
-│  Deep Implementation│  ← Complex logic hidden
-│                     │
+│ Implementacion      │  ← Logica compleja oculta
+│ profunda            │
 │                     │
 └─────────────────────┘
 ```
 
-**Shallow module** = large interface + little implementation (avoid)
+**Modulo superficial** = interfaz grande + poca implementacion (evitar)
 
 ```
 ┌─────────────────────────────────┐
-│       Large Interface           │  ← Many methods, complex params
+│       Interfaz grande           │  ← Muchos metodos, parametros complejos
 ├─────────────────────────────────┤
-│  Thin Implementation            │  ← Just passes through
+│  Implementacion delgada         │  ← Solo pasa los datos
 └─────────────────────────────────┘
 ```
 
-When designing interfaces, ask:
+Al disenar interfaces, preguntar:
 
-- Can I reduce the number of methods?
-- Can I simplify the parameters?
-- Can I hide more complexity inside?
+- ¿Puedo reducir el numero de metodos?
+- ¿Puedo simplificar los parametros?
+- ¿Puedo ocultar mas complejidad adentro?

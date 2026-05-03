@@ -1,74 +1,74 @@
 ---
 name: write-a-prd
-description: Generate a PRD from the client brief and write it as a local markdown file in issues/. Use when the user wants to turn a client request into a structured PRD.
+description: Generar un PRD a partir del brief del cliente y escribirlo como archivo markdown local en issues/. Usar cuando el usuario quiera convertir una solicitud del cliente en un PRD estructurado.
 ---
 
-This skill will be invoked when the user wants to create a PRD. You may skip steps if you don't consider them necessary.
+Esta skill se invoca cuando el usuario quiere crear un PRD. Puedes saltarte pasos si no los consideras necesarios.
 
-1. Ask the user for a long, detailed description of the problem they want to solve and any potential ideas for solutions.
+1. Pedir al usuario una descripcion larga y detallada del problema que quiere resolver y cualquier idea potencial de soluciones.
 
-2. Explore the repo to verify their assertions and understand the current state of the codebase.
+2. Explorar el repositorio para verificar sus afirmaciones y entender el estado actual del codigo base.
 
-3. Interview the user relentlessly about every aspect of this plan until you reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one.
+3. Interrogar al usuario sin piedad sobre cada aspecto de este plan hasta llegar a un entendimiento compartido. Recorrer cada rama del arbol de diseno, resolviendo las dependencias entre decisiones una por una.
 
-4. Sketch out the major modules you will need to build or modify to complete the implementation. Actively look for opportunities to extract deep modules that can be tested in isolation.
+4. Esbozar los modulos principales que necesitaras construir o modificar para completar la implementacion. Buscar activamente oportunidades para extraer modulos profundos que puedan probarse de forma aislada.
 
-A deep module (as opposed to a shallow module) is one which encapsulates a lot of functionality in a simple, testable interface which rarely changes.
+Un modulo profundo (a diferencia de uno superficial) es aquel que encapsula mucha funcionalidad en una interfaz simple y testeable que raramente cambia.
 
-Check with the user that these modules match their expectations. Check with the user which modules they want tests written for.
+Verificar con el usuario que estos modulos coinciden con sus expectativas. Preguntar al usuario para cuales modulos quiere que se escriban tests.
 
-5. Once you have a complete understanding of the problem and solution, use the template below to write the PRD. The PRD should be written as a local markdown file at `issues/prd.md`. Create the `issues/` directory if it doesn't exist. Do NOT submit a GitHub issue or call any external service.
+5. Una vez que tengas un entendimiento completo del problema y la solucion, usar la plantilla a continuacion para escribir el PRD. El PRD debe escribirse como archivo markdown local en `issues/prd.md`. Crear el directorio `issues/` si no existe. NO enviar un issue a GitHub ni llamar a ningun servicio externo.
 
 <prd-template>
 
-## Problem Statement
+## Enunciado del problema
 
-The problem that the user is facing, from the user's perspective.
+El problema que enfrenta el usuario, desde la perspectiva del usuario.
 
-## Solution
+## Solucion
 
-The solution to the problem, from the user's perspective.
+La solucion al problema, desde la perspectiva del usuario.
 
-## User Stories
+## Historias de usuario
 
-A LONG, numbered list of user stories. Each user story should be in the format of:
+Una lista LARGA y numerada de historias de usuario. Cada historia de usuario debe tener el formato:
 
-1. As an <actor>, I want a <feature>, so that <benefit>
+1. Como <actor>, quiero <funcionalidad>, para <beneficio>
 
 <user-story-example>
-1. As a mobile bank customer, I want to see balance on my accounts, so that I can make better informed decisions about my spending
+1. Como cliente de banca movil, quiero ver el saldo de mis cuentas, para poder tomar decisiones mas informadas sobre mis gastos
 </user-story-example>
 
-This list of user stories should be extremely extensive and cover all aspects of the feature.
+Esta lista de historias de usuario debe ser extremadamente extensa y cubrir todos los aspectos de la funcionalidad.
 
-## Implementation Decisions
+## Decisiones de implementacion
 
-A list of implementation decisions that were made. This can include:
+Una lista de decisiones de implementacion que se tomaron. Puede incluir:
 
-- The modules that will be built/modified
-- The interfaces of those modules that will be modified
-- Technical clarifications from the developer
-- Architectural decisions
-- Schema changes
-- API contracts
-- Specific interactions
+- Los modulos que se construiran/modificaran
+- Las interfaces de esos modulos que se modificaran
+- Aclaraciones tecnicas del desarrollador
+- Decisiones arquitectonicas
+- Cambios de esquema
+- Contratos de API
+- Interacciones especificas
 
-Do NOT include specific file paths or code snippets. They may end up being outdated very quickly.
+NO incluir rutas de archivos especificas ni fragmentos de codigo. Pueden quedar desactualizados muy rapidamente.
 
-## Testing Decisions
+## Decisiones de testing
 
-A list of testing decisions that were made. Include:
+Una lista de decisiones de testing que se tomaron. Incluir:
 
-- A description of what makes a good test (only test external behavior, not implementation details)
-- Which modules will be tested
-- Prior art for the tests (i.e. similar types of tests in the codebase)
+- Una descripcion de que hace un buen test (solo probar comportamiento externo, no detalles de implementacion)
+- Que modulos se probaran
+- Arte previo para los tests (es decir, tipos similares de tests en el codigo base)
 
-## Out of Scope
+## Fuera de alcance
 
-A description of the things that are out of scope for this PRD.
+Una descripcion de las cosas que estan fuera del alcance de este PRD.
 
-## Further Notes
+## Notas adicionales
 
-Any further notes about the feature.
+Cualquier nota adicional sobre la funcionalidad.
 
 </prd-template>

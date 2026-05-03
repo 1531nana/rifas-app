@@ -1,92 +1,92 @@
 ---
 name: prd-to-issues
-description: Break a PRD into independently-workable issues and write each as a local markdown file in issues/. Use when the user wants to turn a PRD into a list of concrete tasks.
+description: Dividir un PRD en issues trabajables de forma independiente y escribir cada uno como un archivo markdown local en issues/. Usar cuando el usuario quiera convertir un PRD en una lista de tareas concretas.
 ---
 
-# PRD to Issues
+# PRD a Issues
 
-Break a PRD into independently-grabbable issues using vertical slices (tracer bullets), written as local markdown files.
+Dividir un PRD en issues independientes usando cortes verticales (trazadores), escritos como archivos markdown locales.
 
-## Process
+## Proceso
 
-### 1. Locate the PRD
+### 1. Localizar el PRD
 
-Ask the user for the PRD file path (e.g. `issues/prd.md`).
+Pedir al usuario la ruta del archivo PRD (ej. `issues/prd.md`).
 
-If the PRD is not already in your context window, read it from the file.
+Si el PRD no esta ya en tu ventana de contexto, leelo desde el archivo.
 
-### 2. Explore the codebase (optional)
+### 2. Explorar el codigo base (opcional)
 
-If you have not already explored the codebase, do so to understand the current state of the code.
+Si aun no has explorado el codigo base, hazlo para entender el estado actual del codigo.
 
-### 3. Draft vertical slices
+### 3. Definir cortes verticales
 
-Break the PRD into **tracer bullet** issues. Each issue is a thin vertical slice that cuts through ALL integration layers end-to-end, NOT a horizontal slice of one layer.
+Dividir el PRD en issues de tipo **trazador**. Cada issue es un corte vertical delgado que atraviesa TODAS las capas de integracion de extremo a extremo, NO un corte horizontal de una sola capa.
 
-Slices may be 'HITL' or 'AFK'. HITL slices require human interaction, such as an architectural decision or a design review. AFK slices can be implemented and merged without human interaction. Prefer AFK over HITL where possible.
+Los cortes pueden ser 'HITL' o 'AFK'. Los cortes HITL requieren interaccion humana, como una decision arquitectonica o una revision de diseno. Los cortes AFK pueden implementarse y mergearse sin interaccion humana. Preferir AFK sobre HITL donde sea posible.
 
 <vertical-slice-rules>
-- Each slice delivers a narrow but COMPLETE path through every layer (schema, API, UI, tests)
-- A completed slice is demoable or verifiable on its own
-- Prefer many thin slices over few thick ones
+- Cada corte entrega un camino estrecho pero COMPLETO a traves de cada capa (esquema, API, UI, tests)
+- Un corte completado es demostrable o verificable por si solo
+- Preferir muchos cortes delgados sobre pocos gruesos
 </vertical-slice-rules>
 
-### 4. Quiz the user
+### 4. Consultar al usuario
 
-Present the proposed breakdown as a numbered list. For each slice, show:
+Presentar el desglose propuesto como una lista numerada. Para cada corte, mostrar:
 
-- **Title**: short descriptive name
-- **Type**: HITL / AFK
-- **Blocked by**: which other slices (if any) must complete first
-- **User stories covered**: which user stories from the PRD this addresses
+- **Titulo**: nombre corto y descriptivo
+- **Tipo**: HITL / AFK
+- **Bloqueado por**: que otros cortes (si hay) deben completarse primero
+- **Historias de usuario cubiertas**: que historias de usuario del PRD aborda
 
-Ask the user:
+Preguntar al usuario:
 
-- Does the granularity feel right? (too coarse / too fine)
-- Are the dependency relationships correct?
-- Should any slices be merged or split further?
-- Are the correct slices marked as HITL and AFK?
+- ¿La granularidad se siente correcta? (demasiado gruesa / demasiado fina)
+- ¿Las relaciones de dependencia son correctas?
+- ¿Algun corte deberia fusionarse o dividirse mas?
+- ¿Los cortes correctos estan marcados como HITL y AFK?
 
-Iterate until the user approves the breakdown.
+Iterar hasta que el usuario apruebe el desglose.
 
-### 5. Create the issue files
+### 5. Crear los archivos de issues
 
-For each approved slice, write a markdown file in `issues/` using the naming pattern `issues/NNN-short-title.md` (e.g. `issues/001-add-user-auth.md`).
+Para cada corte aprobado, escribir un archivo markdown en `issues/` usando el patron de nombre `issues/NNN-titulo-corto.md` (ej. `issues/001-agregar-autenticacion.md`).
 
-Number issues starting from the next available number (check what files already exist in `issues/`).
+Numerar los issues comenzando desde el siguiente numero disponible (revisar que archivos ya existen en `issues/`).
 
-Create files in dependency order (blockers first) so you can reference real filenames in the "Blocked by" field.
+Crear archivos en orden de dependencia (los bloqueadores primero) para poder referenciar nombres de archivos reales en el campo "Bloqueado por".
 
-Do NOT use `gh issue create` or any GitHub CLI commands. Do NOT reference GitHub issue numbers. Use local filenames for all cross-references.
+NO usar `gh issue create` ni ningun comando de GitHub CLI. NO referenciar numeros de issues de GitHub. Usar nombres de archivos locales para todas las referencias cruzadas.
 
 <issue-template>
-## Parent PRD
+## PRD padre
 
-`issues/prd.md` (or whichever PRD file was used)
+`issues/prd.md` (o el archivo PRD que se haya usado)
 
-## What to build
+## Que construir
 
-A concise description of this vertical slice. Describe the end-to-end behavior, not layer-by-layer implementation. Reference specific sections of the parent PRD rather than duplicating content.
+Una descripcion concisa de este corte vertical. Describir el comportamiento de extremo a extremo, no la implementacion capa por capa. Referenciar secciones especificas del PRD padre en lugar de duplicar contenido.
 
-## Acceptance criteria
+## Criterios de aceptacion
 
-- [ ] Criterion 1
-- [ ] Criterion 2
-- [ ] Criterion 3
+- [ ] Criterio 1
+- [ ] Criterio 2
+- [ ] Criterio 3
 
-## Blocked by
+## Bloqueado por
 
-- Blocked by `issues/NNN-title.md` (if any)
+- Bloqueado por `issues/NNN-titulo.md` (si aplica)
 
-Or "None - can start immediately" if no blockers.
+O "Ninguno - puede comenzar inmediatamente" si no hay bloqueadores.
 
-## User stories addressed
+## Historias de usuario abordadas
 
-Reference by number from the parent PRD:
+Referenciar por numero desde el PRD padre:
 
-- User story 3
-- User story 7
+- Historia de usuario 3
+- Historia de usuario 7
 
 </issue-template>
 
-Do NOT close or modify the parent PRD file.
+NO cerrar ni modificar el archivo PRD padre.
