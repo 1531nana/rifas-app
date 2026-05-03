@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+rifas.db
+*.sqlite
+*.sqlite3
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# Environment
+.env
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
