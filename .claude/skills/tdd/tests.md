@@ -1,12 +1,12 @@
-# Good and Bad Tests
+# Tests buenos y malos
 
-## Good Tests
+## Tests buenos
 
-**Integration-style**: Test through real interfaces, not mocks of internal parts.
+**Estilo integracion**: Probar a traves de interfaces reales, no mocks de partes internas.
 
 ```typescript
-// GOOD: Tests observable behavior
-test("user can checkout with valid cart", async () => {
+// BIEN: Prueba comportamiento observable
+test("el usuario puede hacer checkout con un carrito valido", async () => {
   const cart = createCart();
   cart.add(product);
   const result = await checkout(cart, paymentMethod);
@@ -14,46 +14,46 @@ test("user can checkout with valid cart", async () => {
 });
 ```
 
-Characteristics:
+Caracteristicas:
 
-- Tests behavior users/callers care about
-- Uses public API only
-- Survives internal refactors
-- Describes WHAT, not HOW
-- One logical assertion per test
+- Prueba comportamiento que les importa a los usuarios/llamadores
+- Usa solo la API publica
+- Sobrevive refactorizaciones internas
+- Describe QUE, no COMO
+- Una afirmacion logica por test
 
-## Bad Tests
+## Tests malos
 
-**Implementation-detail tests**: Coupled to internal structure.
+**Tests acoplados a detalles de implementacion**: Acoplados a la estructura interna.
 
 ```typescript
-// BAD: Tests implementation details
-test("checkout calls paymentService.process", async () => {
+// MAL: Prueba detalles de implementacion
+test("checkout llama a paymentService.process", async () => {
   const mockPayment = jest.mock(paymentService);
   await checkout(cart, payment);
   expect(mockPayment.process).toHaveBeenCalledWith(cart.total);
 });
 ```
 
-Red flags:
+Senales de alerta:
 
-- Mocking internal collaborators
-- Testing private methods
-- Asserting on call counts/order
-- Test breaks when refactoring without behavior change
-- Test name describes HOW not WHAT
-- Verifying through external means instead of interface
+- Mockear colaboradores internos
+- Probar metodos privados
+- Afirmar sobre conteos/orden de llamadas
+- El test falla al refactorizar sin cambio de comportamiento
+- El nombre del test describe COMO no QUE
+- Verificar a traves de medios externos en lugar de la interfaz
 
 ```typescript
-// BAD: Bypasses interface to verify
-test("createUser saves to database", async () => {
+// MAL: Omite la interfaz para verificar
+test("createUser guarda en la base de datos", async () => {
   await createUser({ name: "Alice" });
   const row = await db.query("SELECT * FROM users WHERE name = ?", ["Alice"]);
   expect(row).toBeDefined();
 });
 
-// GOOD: Verifies through interface
-test("createUser makes user retrievable", async () => {
+// BIEN: Verifica a traves de la interfaz
+test("createUser hace al usuario recuperable", async () => {
   const user = await createUser({ name: "Alice" });
   const retrieved = await getUser(user.id);
   expect(retrieved.name).toBe("Alice");

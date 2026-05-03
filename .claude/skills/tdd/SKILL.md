@@ -1,107 +1,107 @@
 ---
 name: tdd
-description: Test-driven development with red-green-refactor loop. Use when user wants to build features or fix bugs using TDD, mentions "red-green-refactor", wants integration tests, or asks for test-first development.
+description: Desarrollo guiado por tests con el ciclo rojo-verde-refactor. Usar cuando el usuario quiera construir funcionalidades o corregir bugs usando TDD, mencione "rojo-verde-refactor", quiera tests de integracion, o pida desarrollo test-first.
 ---
 
-# Test-Driven Development
+# Desarrollo Guiado por Tests
 
-## Philosophy
+## Filosofia
 
-**Core principle**: Tests should verify behavior through public interfaces, not implementation details. Code can change entirely; tests shouldn't.
+**Principio central**: Los tests deben verificar comportamiento a traves de interfaces publicas, no detalles de implementacion. El codigo puede cambiar completamente; los tests no deberian.
 
-**Good tests** are integration-style: they exercise real code paths through public APIs. They describe _what_ the system does, not _how_ it does it. A good test reads like a specification - "user can checkout with valid cart" tells you exactly what capability exists. These tests survive refactors because they don't care about internal structure.
+**Los buenos tests** son de estilo integracion: ejercitan rutas de codigo reales a traves de APIs publicas. Describen _que_ hace el sistema, no _como_ lo hace. Un buen test se lee como una especificacion - "el usuario puede hacer checkout con un carrito valido" te dice exactamente que capacidad existe. Estos tests sobreviven refactorizaciones porque no les importa la estructura interna.
 
-**Bad tests** are coupled to implementation. They mock internal collaborators, test private methods, or verify through external means (like querying a database directly instead of using the interface). The warning sign: your test breaks when you refactor, but behavior hasn't changed. If you rename an internal function and tests fail, those tests were testing implementation, not behavior.
+**Los malos tests** estan acoplados a la implementacion. Mockean colaboradores internos, prueban metodos privados, o verifican a traves de medios externos (como consultar una base de datos directamente en lugar de usar la interfaz). La senal de alerta: tu test falla cuando refactorizas, pero el comportamiento no ha cambiado. Si renombras una funcion interna y los tests fallan, esos tests estaban probando la implementacion, no el comportamiento.
 
-See [tests.md](tests.md) for examples and [mocking.md](mocking.md) for mocking guidelines.
+Ver [tests.md](tests.md) para ejemplos y [mocking.md](mocking.md) para guias de mocking.
 
-## Anti-Pattern: Horizontal Slices
+## Anti-patron: Cortes Horizontales
 
-**DO NOT write all tests first, then all implementation.** This is "horizontal slicing" - treating RED as "write all tests" and GREEN as "write all code."
+**NO escribas todos los tests primero, luego toda la implementacion.** Esto es "corte horizontal" - tratar ROJO como "escribir todos los tests" y VERDE como "escribir todo el codigo".
 
-This produces **crap tests**:
+Esto produce **tests malos**:
 
-- Tests written in bulk test _imagined_ behavior, not _actual_ behavior
-- You end up testing the _shape_ of things (data structures, function signatures) rather than user-facing behavior
-- Tests become insensitive to real changes - they pass when behavior breaks, fail when behavior is fine
-- You outrun your headlights, committing to test structure before understanding the implementation
+- Tests escritos en masa prueban comportamiento _imaginado_, no _real_
+- Terminas probando la _forma_ de las cosas (estructuras de datos, firmas de funciones) en lugar del comportamiento orientado al usuario
+- Los tests se vuelven insensibles a cambios reales - pasan cuando el comportamiento falla, fallan cuando el comportamiento esta bien
+- Te adelantas a tus faros, comprometiendote con la estructura de tests antes de entender la implementacion
 
-**Correct approach**: Vertical slices via tracer bullets. One test → one implementation → repeat. Each test responds to what you learned from the previous cycle. Because you just wrote the code, you know exactly what behavior matters and how to verify it.
+**Enfoque correcto**: Cortes verticales via trazadores. Un test → una implementacion → repetir. Cada test responde a lo que aprendiste del ciclo anterior. Como acabas de escribir el codigo, sabes exactamente que comportamiento importa y como verificarlo.
 
 ```
-WRONG (horizontal):
-  RED:   test1, test2, test3, test4, test5
-  GREEN: impl1, impl2, impl3, impl4, impl5
+MAL (horizontal):
+  ROJO:  test1, test2, test3, test4, test5
+  VERDE: impl1, impl2, impl3, impl4, impl5
 
-RIGHT (vertical):
-  RED→GREEN: test1→impl1
-  RED→GREEN: test2→impl2
-  RED→GREEN: test3→impl3
+BIEN (vertical):
+  ROJO→VERDE: test1→impl1
+  ROJO→VERDE: test2→impl2
+  ROJO→VERDE: test3→impl3
   ...
 ```
 
-## Workflow
+## Flujo de trabajo
 
-### 1. Planning
+### 1. Planificacion
 
-Before writing any code:
+Antes de escribir cualquier codigo:
 
-- [ ] Confirm with user what interface changes are needed
-- [ ] Confirm with user which behaviors to test (prioritize)
-- [ ] Identify opportunities for [deep modules](deep-modules.md) (small interface, deep implementation)
-- [ ] Design interfaces for [testability](interface-design.md)
-- [ ] List the behaviors to test (not implementation steps)
-- [ ] Get user approval on the plan
+- [ ] Confirmar con el usuario que cambios de interfaz son necesarios
+- [ ] Confirmar con el usuario que comportamientos probar (priorizar)
+- [ ] Identificar oportunidades para [modulos profundos](deep-modules.md) (interfaz pequena, implementacion profunda)
+- [ ] Disenar interfaces para [testabilidad](interface-design.md)
+- [ ] Listar los comportamientos a probar (no pasos de implementacion)
+- [ ] Obtener aprobacion del usuario sobre el plan
 
-Ask: "What should the public interface look like? Which behaviors are most important to test?"
+Preguntar: "¿Como deberia verse la interfaz publica? ¿Cuales comportamientos son mas importantes de probar?"
 
-**You can't test everything.** Confirm with the user exactly which behaviors matter most. Focus testing effort on critical paths and complex logic, not every possible edge case.
+**No puedes probar todo.** Confirmar con el usuario exactamente que comportamientos importan mas. Enfocar el esfuerzo de testing en rutas criticas y logica compleja, no en cada caso borde posible.
 
-### 2. Tracer Bullet
+### 2. Trazador
 
-Write ONE test that confirms ONE thing about the system:
-
-```
-RED:   Write test for first behavior → test fails
-GREEN: Write minimal code to pass → test passes
-```
-
-This is your tracer bullet - proves the path works end-to-end.
-
-### 3. Incremental Loop
-
-For each remaining behavior:
+Escribir UN test que confirme UNA cosa sobre el sistema:
 
 ```
-RED:   Write next test → fails
-GREEN: Minimal code to pass → passes
+ROJO:  Escribir test para el primer comportamiento → el test falla
+VERDE: Escribir codigo minimo para pasar → el test pasa
 ```
 
-Rules:
+Este es tu trazador - demuestra que el camino funciona de extremo a extremo.
 
-- One test at a time
-- Only enough code to pass current test
-- Don't anticipate future tests
-- Keep tests focused on observable behavior
+### 3. Ciclo incremental
 
-### 4. Refactor
-
-After all tests pass, look for [refactor candidates](refactoring.md):
-
-- [ ] Extract duplication
-- [ ] Deepen modules (move complexity behind simple interfaces)
-- [ ] Apply SOLID principles where natural
-- [ ] Consider what new code reveals about existing code
-- [ ] Run tests after each refactor step
-
-**Never refactor while RED.** Get to GREEN first.
-
-## Checklist Per Cycle
+Para cada comportamiento restante:
 
 ```
-[ ] Test describes behavior, not implementation
-[ ] Test uses public interface only
-[ ] Test would survive internal refactor
-[ ] Code is minimal for this test
-[ ] No speculative features added
+ROJO:  Escribir el siguiente test → falla
+VERDE: Codigo minimo para pasar → pasa
+```
+
+Reglas:
+
+- Un test a la vez
+- Solo el codigo suficiente para pasar el test actual
+- No anticipar tests futuros
+- Mantener los tests enfocados en comportamiento observable
+
+### 4. Refactorizacion
+
+Despues de que todos los tests pasen, buscar [candidatos para refactorizar](refactoring.md):
+
+- [ ] Extraer duplicacion
+- [ ] Profundizar modulos (mover complejidad detras de interfaces simples)
+- [ ] Aplicar principios SOLID donde sea natural
+- [ ] Considerar lo que el nuevo codigo revela sobre el codigo existente
+- [ ] Ejecutar tests despues de cada paso de refactorizacion
+
+**Nunca refactorizar en ROJO.** Llegar a VERDE primero.
+
+## Lista de verificacion por ciclo
+
+```
+[ ] El test describe comportamiento, no implementacion
+[ ] El test usa solo la interfaz publica
+[ ] El test sobreviviria una refactorizacion interna
+[ ] El codigo es minimo para este test
+[ ] No se agregaron funcionalidades especulativas
 ```
