@@ -9,6 +9,13 @@ function formatMoney(value) {
   }).format(value);
 }
 
+function formatDate(value) {
+  return new Intl.DateTimeFormat("es-CO", {
+    dateStyle: "full",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
 export default function PublicRaffle({ token }) {
   const [raffle, setRaffle] = useState(null);
   const [selected, setSelected] = useState(null);
@@ -53,20 +60,31 @@ export default function PublicRaffle({ token }) {
   }
 
   if (!raffle) {
-    return <main className="shell">{message || "Cargando rifa..."}</main>;
+    return <main className="app-shell"><section className="panel">{message || "Cargando rifa..."}</section></main>;
   }
 
   return (
-    <main className="shell">
+    <main className="app-shell">
       <section className="public-hero">
-        <div>
+        <div className="hero-copy">
           <p className="eyebrow">{raffle.lottery_type}</p>
           <h1>{raffle.name}</h1>
           <p>{raffle.prize_description}</p>
-          <strong>{formatMoney(raffle.ticket_price)} por boleta</strong>
-          <p className="muted">Sorteo: {new Date(raffle.draw_date).toLocaleString("es-CO")}</p>
+          <div className="hero-facts">
+            <span>{formatMoney(raffle.ticket_price)} por boleta</span>
+            <span>Sorteo: {formatDate(raffle.draw_date)}</span>
+          </div>
         </div>
-        {raffle.prize_image_url && <img src={raffle.prize_image_url} alt={`Premio de ${raffle.name}`} />}
+        <div className="prize-visual">
+          {raffle.prize_image_url ? (
+            <img src={raffle.prize_image_url} alt={`Premio de ${raffle.name}`} />
+          ) : (
+            <div>
+              <span>Premio</span>
+              <strong>{raffle.prize_description}</strong>
+            </div>
+          )}
+        </div>
       </section>
 
       {message && <p className="notice">{message}</p>}
@@ -86,46 +104,60 @@ export default function PublicRaffle({ token }) {
         </article>
       </section>
 
-      <section className="panel">
-        <div className="section-head">
-          <h2>Selecciona tu numero</h2>
-          <div className="legend">
-            <span><i className="dot available" /> Disponible</span>
-            <span><i className="dot reserved" /> Reservado</span>
-            <span><i className="dot sold" /> Vendido</span>
-          </div>
-        </div>
-        <div className="number-grid">
-          {raffle.numbers.map((item) => (
-            <button
-              key={item.number}
-              className={`number ${item.status} ${selected === item.number ? "selected" : ""}`}
-              disabled={item.status !== "available"}
-              onClick={() => setSelected(item.number)}
-            >
-              {item.number.toString().padStart(2, "0")}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {selected !== null && selectedState === "available" && (
+      <div className="buyer-layout">
         <section className="panel">
-          <h2>Reservar numero {selected}</h2>
-          <form onSubmit={reserve} className="form">
-            <input placeholder="Nombre completo" value={buyer.buyer_name} onChange={(e) => setBuyer({ ...buyer, buyer_name: e.target.value })} />
-            <input placeholder="Celular" value={buyer.buyer_phone} onChange={(e) => setBuyer({ ...buyer, buyer_phone: e.target.value })} />
-            <input placeholder="Email opcional" type="email" value={buyer.buyer_email} onChange={(e) => setBuyer({ ...buyer, buyer_email: e.target.value })} />
-            <select value={buyer.payment_method} onChange={(e) => setBuyer({ ...buyer, payment_method: e.target.value })}>
-              <option value="cash">Efectivo</option>
-              <option value="card">Tarjeta</option>
-              <option value="pse">PSE</option>
-            </select>
-            <p className="muted">Efectivo tiene plazo de 5 dias. Tarjeta y PSE tienen plazo de 48 horas.</p>
-            <button type="submit">Confirmar reserva</button>
-          </form>
+          <div className="section-head">
+            <div>
+              <p className="eyebrow">Seleccion de boleta</p>
+              <h2>Elige tu numero</h2>
+            </div>
+            <div className="legend">
+              <span><i className="dot available" /> Disponible</span>
+              <span><i className="dot reserved" /> Reservado</span>
+              <span><i className="dot sold" /> Vendido</span>
+            </div>
+          </div>
+          <div className="number-grid">
+            {raffle.numbers.map((item) => (
+              <button
+                key={item.number}
+                className={`number ${item.status} ${selected === item.number ? "selected" : ""}`}
+                disabled={item.status !== "available"}
+                onClick={() => setSelected(item.number)}
+              >
+                {item.number.toString().padStart(2, "0")}
+              </button>
+            ))}
+          </div>
         </section>
-      )}
+
+        <section className="panel checkout-panel">
+          {selected === null || selectedState !== "available" ? (
+            <>
+              <p className="eyebrow">Reserva</p>
+              <h2>Selecciona un numero disponible</h2>
+              <p className="muted">Cuando lo elijas, aqui aparece el formulario para separar tu boleta.</p>
+            </>
+          ) : (
+            <>
+              <p className="eyebrow">Reserva segura</p>
+              <h2>Numero {selected.toString().padStart(2, "0")}</h2>
+              <form onSubmit={reserve} className="form">
+                <input placeholder="Nombre completo" value={buyer.buyer_name} onChange={(e) => setBuyer({ ...buyer, buyer_name: e.target.value })} />
+                <input placeholder="Celular" value={buyer.buyer_phone} onChange={(e) => setBuyer({ ...buyer, buyer_phone: e.target.value })} />
+                <input placeholder="Email opcional" type="email" value={buyer.buyer_email} onChange={(e) => setBuyer({ ...buyer, buyer_email: e.target.value })} />
+                <select value={buyer.payment_method} onChange={(e) => setBuyer({ ...buyer, payment_method: e.target.value })}>
+                  <option value="cash">Efectivo</option>
+                  <option value="card">Tarjeta</option>
+                  <option value="pse">PSE</option>
+                </select>
+                <p className="muted">Efectivo tiene plazo de 5 dias. Tarjeta y PSE tienen plazo de 48 horas.</p>
+                <button type="submit">Confirmar reserva</button>
+              </form>
+            </>
+          )}
+        </section>
+      </div>
     </main>
   );
 }

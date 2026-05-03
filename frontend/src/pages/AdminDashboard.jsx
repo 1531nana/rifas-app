@@ -19,6 +19,13 @@ function formatMoney(value) {
   }).format(value);
 }
 
+function formatDate(value) {
+  return new Intl.DateTimeFormat("es-CO", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
 export default function AdminDashboard() {
   const [mode, setMode] = useState("login");
   const [token, setToken] = useState(() => localStorage.getItem("rifas_token") ?? "");
@@ -31,6 +38,9 @@ export default function AdminDashboard() {
 
   const isLoggedIn = Boolean(token);
   const publicOrigin = window.location.origin;
+  const selectedProgress = selectedRaffle
+    ? Math.round((selectedRaffle.sold_count / selectedRaffle.total_numbers) * 100)
+    : 0;
 
   const totals = useMemo(() => {
     return raffles.reduce(
@@ -138,26 +148,40 @@ export default function AdminDashboard() {
     }
   }
 
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setMessage("Enlace copiado al portapapeles.");
+    } catch {
+      setMessage("No se pudo copiar automaticamente. Selecciona el enlace manualmente.");
+    }
+  }
+
   function logout() {
     clearSession();
     setMessage("Sesion cerrada.");
   }
 
   return (
-    <main className="shell">
-      <section className="header">
-        <div>
+    <main className="app-shell">
+      <section className="hero">
+        <div className="hero-copy">
           <p className="eyebrow">Panel del vendedor</p>
           <h1>Gestion de Rifas Digital</h1>
-          <p className="muted">Crea rifas, comparte enlaces publicos y controla pagos pendientes.</p>
+          <p>Crea rifas, comparte enlaces publicos y controla compradores, reservas y pagos desde un solo lugar.</p>
         </div>
-        {isLoggedIn && <button onClick={logout}>Cerrar sesion</button>}
+        <div className="hero-actions">
+          <span className="status-pill online">API activa</span>
+          {isLoggedIn && <button className="ghost-button" onClick={logout}>Cerrar sesion</button>}
+        </div>
       </section>
 
       {message && <p className="notice">{message}</p>}
 
       {!isLoggedIn && (
         <section className="panel auth-panel">
+          <p className="eyebrow">Acceso administrativo</p>
+          <h2>{mode === "register" ? "Crear cuenta de vendedor" : "Entrar al panel"}</h2>
           <div className="tabs">
             <button className={mode === "login" ? "active" : ""} onClick={() => setMode("login")}>
               Iniciar sesion
@@ -206,13 +230,18 @@ export default function AdminDashboard() {
             </article>
             <article>
               <span>API</span>
-              <strong>Activa</strong>
+              <strong>Online</strong>
             </article>
           </section>
 
           <div className="grid-two">
             <section className="panel">
-              <h2>Nueva rifa</h2>
+              <div className="section-head">
+                <div>
+                  <p className="eyebrow">Configuracion</p>
+                  <h2>Nueva rifa</h2>
+                </div>
+              </div>
               <form onSubmit={submitRaffle} className="form">
                 <input placeholder="Nombre" value={raffle.name} onChange={(e) => setRaffle({ ...raffle, name: e.target.value })} />
                 <input placeholder="Tipo de loteria" value={raffle.lottery_type} onChange={(e) => setRaffle({ ...raffle, lottery_type: e.target.value })} />
@@ -221,21 +250,33 @@ export default function AdminDashboard() {
                 <textarea placeholder="Descripcion del premio" value={raffle.prize_description} onChange={(e) => setRaffle({ ...raffle, prize_description: e.target.value })} />
                 <input type="datetime-local" value={raffle.draw_date} onChange={(e) => setRaffle({ ...raffle, draw_date: e.target.value })} />
                 <input placeholder="URL imagen premio opcional" value={raffle.prize_image_url} onChange={(e) => setRaffle({ ...raffle, prize_image_url: e.target.value })} />
-                <button type="submit" disabled={loading}>Crear rifa</button>
+                <button type="submit" disabled={loading}>{loading ? "Guardando..." : "Crear rifa"}</button>
               </form>
             </section>
 
             <section className="panel">
-              <h2>Mis rifas</h2>
-              <div className="list">
+              <div className="section-head">
+                <div>
+                  <p className="eyebrow">Operacion</p>
+                  <h2>Mis rifas</h2>
+                </div>
+              </div>
+              <div className="raffle-list">
                 {raffles.length === 0 && <p className="muted">Aun no hay rifas. Crea la primera para generar el enlace publico.</p>}
                 {raffles.map((item) => (
-                  <article key={item.id} className="raffle-row">
-                    <button className="link-button" onClick={() => loadRaffleDetail(item.id)}>
-                      {item.name}
-                    </button>
-                    <span>{item.total_numbers} numeros - {formatMoney(item.ticket_price)}</span>
-                    <a href={`/r/${item.public_token}`}>Abrir vista publica</a>
+                  <article key={item.id} className={`raffle-card ${selectedRaffle?.id === item.id ? "active" : ""}`}>
+                    <div>
+                      <button className="link-button" onClick={() => loadRaffleDetail(item.id)}>
+                        {item.name}
+                      </button>
+                      <p className="muted">{item.total_numbers} numeros - {formatMoney(item.ticket_price)}</p>
+                    </div>
+                    <div className="card-actions">
+                      <a className="small-button" href={`/r/${item.public_token}`}>Vista publica</a>
+                      <button className="small-button secondary" onClick={() => copyText(`${publicOrigin}/r/${item.public_token}`)}>
+                        Copiar enlace
+                      </button>
+                    </div>
                     <code>{publicOrigin}/r/{item.public_token}</code>
                   </article>
                 ))}
@@ -250,8 +291,14 @@ export default function AdminDashboard() {
                   <p className="eyebrow">Detalle de rifa</p>
                   <h2>{selectedRaffle.name}</h2>
                   <p className="muted">{selectedRaffle.prize_description}</p>
+                  <p className="muted">Sorteo: {formatDate(selectedRaffle.draw_date)}</p>
                 </div>
-                <a href={`/r/${selectedRaffle.public_token}`}>Ver como comprador</a>
+                <div className="stack-actions">
+                  <a className="small-button" href={`/r/${selectedRaffle.public_token}`}>Ver como comprador</a>
+                  <button className="small-button secondary" onClick={() => copyText(`${publicOrigin}/r/${selectedRaffle.public_token}`)}>
+                    Copiar enlace
+                  </button>
+                </div>
               </div>
 
               <div className="metrics compact">
@@ -271,6 +318,16 @@ export default function AdminDashboard() {
                   <span>Recaudado</span>
                   <strong>{formatMoney(selectedRaffle.paid_total)}</strong>
                 </article>
+              </div>
+
+              <div className="progress-block">
+                <div className="progress-label">
+                  <span>Progreso de venta pagada</span>
+                  <strong>{selectedProgress}%</strong>
+                </div>
+                <div className="progress-track">
+                  <div className="progress-fill" style={{ width: `${selectedProgress}%` }} />
+                </div>
               </div>
 
               <div className="table-wrap">
@@ -296,8 +353,8 @@ export default function AdminDashboard() {
                         <td>{reservation.number}</td>
                         <td>{reservation.buyer_name}</td>
                         <td>{reservation.buyer_phone}</td>
-                        <td>{reservation.payment_method}</td>
-                        <td>{reservation.status}</td>
+                        <td><span className="badge neutral">{reservation.payment_method}</span></td>
+                        <td><span className={`badge ${reservation.status}`}>{reservation.status}</span></td>
                         <td>
                           {reservation.payment_method === "cash" && reservation.status === "pending" ? (
                             <button onClick={() => confirmCash(reservation.id)} disabled={loading}>
