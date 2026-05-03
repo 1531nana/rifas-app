@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from app.models.domain import PaymentMethod, RaffleStatus, ReservationStatus
 
@@ -32,6 +32,8 @@ class RaffleCreate(BaseModel):
 
 
 class RaffleRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     name: str
     lottery_type: str
@@ -62,6 +64,8 @@ class ReservationCreate(BaseModel):
 
 
 class ReservationRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     raffle_id: int
     number: int
@@ -71,3 +75,11 @@ class ReservationRead(BaseModel):
     payment_method: PaymentMethod
     status: ReservationStatus
     expires_at: datetime
+
+
+class RaffleDetailRead(RaffleRead):
+    sold_count: int
+    reserved_count: int
+    available_count: int
+    paid_total: int
+    reservations: list[ReservationRead]

@@ -13,7 +13,9 @@ export async function request(path, options = {}) {
 
   const data = await response.json().catch(() => null);
   if (!response.ok) {
-    throw new Error(data?.detail ?? "Error inesperado");
+    const error = new Error(data?.detail ?? "Error inesperado");
+    error.status = response.status;
+    throw error;
   }
   return data;
 }

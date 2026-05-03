@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { request } from "../lib/api.js";
 
+function formatMoney(value) {
+  return new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency: "COP",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
 export default function PublicRaffle({ token }) {
   const [raffle, setRaffle] = useState(null);
   const [selected, setSelected] = useState(null);
@@ -11,6 +19,13 @@ export default function PublicRaffle({ token }) {
     () => raffle?.numbers?.find((item) => item.number === selected)?.status,
     [raffle, selected],
   );
+  const counts = useMemo(() => {
+    if (!raffle) return { available: 0, reserved: 0, sold: 0 };
+    return raffle.numbers.reduce(
+      (acc, item) => ({ ...acc, [item.status]: acc[item.status] + 1 }),
+      { available: 0, reserved: 0, sold: 0 },
+    );
+  }, [raffle]);
 
   async function loadRaffle() {
     const data = await request(`/r/${token}`);
@@ -23,14 +38,18 @@ export default function PublicRaffle({ token }) {
 
   async function reserve(event) {
     event.preventDefault();
-    await request(`/r/${token}/reserve`, {
-      method: "POST",
-      body: JSON.stringify({ ...buyer, buyer_email: buyer.buyer_email || null, number: selected }),
-    });
-    setMessage("Numero reservado. Completa el pago para que la boleta participe.");
-    setSelected(null);
-    setBuyer({ buyer_name: "", buyer_phone: "", buyer_email: "", payment_method: "cash" });
-    await loadRaffle();
+    try {
+      await request(`/r/${token}/reserve`, {
+        method: "POST",
+        body: JSON.stringify({ ...buyer, buyer_email: buyer.buyer_email || null, number: selected }),
+      });
+      setMessage("Numero reservado. Completa el pago para que la boleta participe.");
+      setSelected(null);
+      setBuyer({ buyer_name: "", buyer_phone: "", buyer_email: "", payment_method: "cash" });
+      await loadRaffle();
+    } catch (error) {
+      setMessage(error.message);
+    }
   }
 
   if (!raffle) {
@@ -44,15 +63,38 @@ export default function PublicRaffle({ token }) {
           <p className="eyebrow">{raffle.lottery_type}</p>
           <h1>{raffle.name}</h1>
           <p>{raffle.prize_description}</p>
-          <strong>${raffle.ticket_price} por boleta</strong>
+          <strong>{formatMoney(raffle.ticket_price)} por boleta</strong>
+          <p className="muted">Sorteo: {new Date(raffle.draw_date).toLocaleString("es-CO")}</p>
         </div>
         {raffle.prize_image_url && <img src={raffle.prize_image_url} alt={`Premio de ${raffle.name}`} />}
       </section>
 
       {message && <p className="notice">{message}</p>}
 
+      <section className="metrics compact">
+        <article>
+          <span>Disponibles</span>
+          <strong>{counts.available}</strong>
+        </article>
+        <article>
+          <span>Reservados</span>
+          <strong>{counts.reserved}</strong>
+        </article>
+        <article>
+          <span>Vendidos</span>
+          <strong>{counts.sold}</strong>
+        </article>
+      </section>
+
       <section className="panel">
-        <h2>Selecciona tu numero</h2>
+        <div className="section-head">
+          <h2>Selecciona tu numero</h2>
+          <div className="legend">
+            <span><i className="dot available" /> Disponible</span>
+            <span><i className="dot reserved" /> Reservado</span>
+            <span><i className="dot sold" /> Vendido</span>
+          </div>
+        </div>
         <div className="number-grid">
           {raffle.numbers.map((item) => (
             <button

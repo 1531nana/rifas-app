@@ -61,3 +61,16 @@ def test_admin_can_create_raffle_and_buyer_can_reserve_number():
         },
     )
     assert duplicate.status_code == 409
+
+    detail = client.get(f"/raffles/{create.json()['id']}", headers={"Authorization": f"Bearer {token}"})
+    assert detail.status_code == 200
+    assert detail.json()["reserved_count"] == 1
+    assert detail.json()["reservations"][0]["buyer_name"] == "Comprador Demo"
+
+    reservation_id = reserve.json()["id"]
+    confirmed = client.post(
+        f"/raffles/{create.json()['id']}/reservations/{reservation_id}/confirm-cash",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert confirmed.status_code == 200
+    assert confirmed.json()["status"] == "paid"
