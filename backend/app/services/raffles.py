@@ -1,11 +1,15 @@
 from datetime import datetime, timedelta
+import logging
 from secrets import token_urlsafe
 
 from fastapi import HTTPException, status
 from sqlmodel import Session, select
 
+from app.core.database import engine
 from app.models.domain import PaymentMethod, Raffle, RaffleStatus, Reservation, ReservationStatus
 from app.models.schemas import NumberState, RaffleCreate, RaffleDetailRead, ReservationCreate
+
+logger = logging.getLogger(__name__)
 
 
 def create_public_token(session: Session) -> str:
@@ -174,3 +178,15 @@ def confirm_cash_payment(session: Session, raffle: Raffle, reservation_id: int) 
     session.commit()
     session.refresh(reservation)
     return reservation
+
+
+def run_expiration_job() -> None:
+    try:
+        with Session(engine) as session:
+            active_raffles = session.exec(
+                select(Raffle).where(Raffle.status == RaffleStatus.active)
+            ).all()
+            for raffle in active_raffles:
+                expire_old_reservations(session, raffle.id or 0)
+    except Exception:
+        logger.exception("Error ejecutando job de expiracion de reservas")
