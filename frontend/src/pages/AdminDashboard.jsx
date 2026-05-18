@@ -44,6 +44,7 @@ export default function AdminDashboard() {
 
   function clearSession() {
     localStorage.removeItem("rifas_token");
+    localStorage.removeItem("rifas_refresh");
     setToken("");
     setRaffles([]);
     setSelectedRaffle(null);
@@ -88,6 +89,7 @@ export default function AdminDashboard() {
         mode === "register" ? credentials : { email: credentials.email, password: credentials.password };
       const data = await request(endpoint, { method: "POST", body: JSON.stringify(payload) });
       localStorage.setItem("rifas_token", data.access_token);
+      localStorage.setItem("rifas_refresh", data.refresh_token);
       setToken(data.access_token);
       setMessage("Sesion iniciada.");
       await loadRaffles();

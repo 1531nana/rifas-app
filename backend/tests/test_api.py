@@ -78,6 +78,33 @@ def test_admin_can_create_raffle_and_buyer_can_reserve_number():
     assert confirmed.json()["status"] == "paid"
 
 
+def test_refresh_token_flow():
+    email = f"admin-{uuid4().hex}@example.com"
+    register = client.post(
+        "/auth/register",
+        json={"email": email, "password": "supersecret", "full_name": "Admin Demo"},
+    )
+    assert register.status_code == 201
+    data = register.json()
+    assert "access_token" in data
+    assert "refresh_token" in data
+
+    refresh = client.post(
+        "/auth/refresh",
+        json={"refresh_token": data["refresh_token"]},
+    )
+    assert refresh.status_code == 200
+    new_data = refresh.json()
+    assert "access_token" in new_data
+    assert "refresh_token" in new_data
+
+    bad_refresh = client.post(
+        "/auth/refresh",
+        json={"refresh_token": "invalid-token"},
+    )
+    assert bad_refresh.status_code == 401
+
+
 def test_expiration_job_marks_expired_reservations():
     email = f"admin-{uuid4().hex}@example.com"
     register = client.post(

@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./rifas.db"
     jwt_secret: str = "change-me-in-production"
     access_token_minutes: int = 60
+    refresh_token_minutes: int = 10080
     frontend_origin: str = "http://127.0.0.1:5173"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
