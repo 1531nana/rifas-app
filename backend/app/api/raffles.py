@@ -4,8 +4,8 @@ from sqlmodel import Session, select
 from app.api.deps import get_current_admin
 from app.core.database import get_session
 from app.models.domain import Admin, Raffle
-from app.models.schemas import RaffleCreate, RaffleDetailRead, RaffleRead, ReservationRead
-from app.services.raffles import confirm_cash_payment, create_raffle, get_owned_raffle, get_raffle_detail
+from app.models.schemas import RaffleCreate, RaffleDetailRead, RaffleRead, RaffleUpdate, ReservationRead
+from app.services.raffles import confirm_cash_payment, create_raffle, get_owned_raffle, get_raffle_detail, update_raffle
 
 router = APIRouter(prefix="/raffles", tags=["raffles"])
 
@@ -35,6 +35,17 @@ def get_raffle_endpoint(
 ) -> RaffleDetailRead:
     raffle = get_owned_raffle(session, current_admin.id or 0, raffle_id)
     return get_raffle_detail(session, raffle)
+
+
+@router.patch("/{raffle_id}", response_model=RaffleRead)
+def update_raffle_endpoint(
+    raffle_id: int,
+    payload: RaffleUpdate,
+    current_admin: Admin = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+) -> Raffle:
+    raffle = get_owned_raffle(session, current_admin.id or 0, raffle_id)
+    return update_raffle(session, raffle, payload)
 
 
 @router.post("/{raffle_id}/reservations/{reservation_id}/confirm-cash", response_model=ReservationRead)
