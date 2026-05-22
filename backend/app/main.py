@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api import auth, public, raffles
 from app.core.config import get_settings
 from app.core.database import create_db_and_tables
+from app.core.scheduler import start_scheduler, stop_scheduler
 
 settings = get_settings()
 
@@ -25,6 +26,12 @@ app.include_router(public.router)
 @app.on_event("startup")
 def on_startup() -> None:
     create_db_and_tables()
+    start_scheduler()
+
+
+@app.on_event("shutdown")
+def on_shutdown() -> None:
+    stop_scheduler()
 
 
 @app.get("/health")

@@ -69,7 +69,7 @@ export default function PublicRaffle({ token }) {
         {raffle.prize_image_url && <img src={raffle.prize_image_url} alt={`Premio de ${raffle.name}`} />}
       </section>
 
-      {message && <p className="notice">{message}</p>}
+      {message && <p className="notice text-center">{message}</p>}
 
       <section className="metrics compact">
         <article>
