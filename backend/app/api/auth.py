@@ -2,15 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 
 from app.core.database import get_session
-from app.core.security import (
-    create_access_token,
-    create_refresh_token,
-    decode_refresh_token,
-    hash_password,
-    verify_password,
-)
+from app.core.security import create_access_token, create_refresh_token, decode_refresh_token, hash_password, verify_password
 from app.models.domain import Admin
-from app.models.schemas import AdminCreate, AdminLogin, RefreshRequest, TokenResponse
+from app.models.schemas import AdminCreate, AdminLogin, RefreshTokenRequest, TokenResponse
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -28,10 +22,8 @@ def register(payload: AdminCreate, session: Session = Depends(get_session)) -> T
     session.add(admin)
     session.commit()
     session.refresh(admin)
-    return TokenResponse(
-        access_token=create_access_token(str(admin.id)),
-        refresh_token=create_refresh_token(str(admin.id)),
-    )
+    subject = str(admin.id)
+    return TokenResponse(access_token=create_access_token(subject), refresh_token=create_refresh_token(subject))
 
 
 @router.post("/login", response_model=TokenResponse)
@@ -39,18 +31,16 @@ def login(payload: AdminLogin, session: Session = Depends(get_session)) -> Token
     admin = session.exec(select(Admin).where(Admin.email == payload.email)).first()
     if admin is None or not verify_password(payload.password, admin.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Credenciales invalidas")
-    return TokenResponse(
-        access_token=create_access_token(str(admin.id)),
-        refresh_token=create_refresh_token(str(admin.id)),
-    )
+    subject = str(admin.id)
+    return TokenResponse(access_token=create_access_token(subject), refresh_token=create_refresh_token(subject))
 
 
 @router.post("/refresh", response_model=TokenResponse)
-def refresh(payload: RefreshRequest) -> TokenResponse:
+def refresh(payload: RefreshTokenRequest, session: Session = Depends(get_session)) -> TokenResponse:
     subject = decode_refresh_token(payload.refresh_token)
     if subject is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token invalido o expirado")
-    return TokenResponse(
-        access_token=create_access_token(subject),
-        refresh_token=create_refresh_token(subject),
-    )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token invalido")
+    admin = session.get(Admin, int(subject))
+    if admin is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Admin no encontrado")
+    return TokenResponse(access_token=create_access_token(subject), refresh_token=create_refresh_token(subject))

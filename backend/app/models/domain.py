@@ -46,6 +46,8 @@ class Raffle(SQLModel, table=True):
     prize_image_url: Optional[str] = None
     public_token: str = Field(index=True, unique=True)
     status: RaffleStatus = Field(default=RaffleStatus.active)
+    winner_number: Optional[int] = None
+    winner_registered_at: Optional[datetime] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
@@ -60,4 +62,6 @@ class Reservation(SQLModel, table=True):
     status: ReservationStatus = Field(default=ReservationStatus.pending, index=True)
     expires_at: datetime
     paid_at: Optional[datetime] = None
+    wompi_transaction_id: Optional[str] = Field(default=None, index=True)
+    reminder_sent_at: Optional[datetime] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)

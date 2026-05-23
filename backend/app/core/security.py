@@ -26,30 +26,26 @@ def create_access_token(subject: str) -> str:
 
 def create_refresh_token(subject: str) -> str:
     settings = get_settings()
-    expires_at = datetime.now(UTC) + timedelta(minutes=settings.refresh_token_minutes)
+    expires_at = datetime.now(UTC) + timedelta(days=settings.refresh_token_days)
     payload = {"sub": subject, "exp": expires_at, "type": "refresh"}
     return jwt.encode(payload, settings.jwt_secret, algorithm=ALGORITHM)
 
 
 def decode_access_token(token: str) -> str | None:
-    settings = get_settings()
-    try:
-        payload = jwt.decode(token, settings.jwt_secret, algorithms=[ALGORITHM])
-    except JWTError:
-        return None
-    if payload.get("type") != "access":
-        return None
-    subject = payload.get("sub")
-    return subject if isinstance(subject, str) else None
+    return _decode_token(token, expected_type="access")
 
 
 def decode_refresh_token(token: str) -> str | None:
+    return _decode_token(token, expected_type="refresh")
+
+
+def _decode_token(token: str, expected_type: str) -> str | None:
     settings = get_settings()
     try:
         payload = jwt.decode(token, settings.jwt_secret, algorithms=[ALGORITHM])
     except JWTError:
         return None
-    if payload.get("type") != "refresh":
+    if payload.get("type") != expected_type:
         return None
     subject = payload.get("sub")
     return subject if isinstance(subject, str) else None

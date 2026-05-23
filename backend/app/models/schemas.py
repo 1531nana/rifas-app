@@ -18,11 +18,11 @@ class AdminLogin(BaseModel):
 
 class TokenResponse(BaseModel):
     access_token: str
-    refresh_token: str
+    refresh_token: str | None = None
     token_type: str = "bearer"
 
 
-class RefreshRequest(BaseModel):
+class RefreshTokenRequest(BaseModel):
     refresh_token: str
 
 
@@ -33,6 +33,16 @@ class RaffleCreate(BaseModel):
     ticket_price: int = Field(gt=0)
     prize_description: str = Field(min_length=5)
     draw_date: datetime
+    prize_image_url: str | None = None
+
+
+class RaffleUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=3, max_length=160)
+    lottery_type: str | None = Field(default=None, min_length=2, max_length=80)
+    total_numbers: int | None = Field(default=None, ge=10, le=10000)
+    ticket_price: int | None = Field(default=None, gt=0)
+    prize_description: str | None = Field(default=None, min_length=5)
+    draw_date: datetime | None = None
     prize_image_url: str | None = None
 
 
@@ -49,6 +59,7 @@ class RaffleRead(BaseModel):
     prize_image_url: str | None
     public_token: str
     status: RaffleStatus
+    winner_number: int | None = None
 
 
 class NumberState(BaseModel):
@@ -63,7 +74,7 @@ class PublicRaffleRead(RaffleRead):
 class ReservationCreate(BaseModel):
     number: int = Field(ge=0)
     buyer_name: str = Field(min_length=3, max_length=120)
-    buyer_phone: str = Field(min_length=7, max_length=30)
+    buyer_phone: str = Field(min_length=7, max_length=30, pattern=r"^\+?[0-9][0-9\s-]{6,29}$")
     buyer_email: EmailStr | None = None
     payment_method: PaymentMethod
 
@@ -80,16 +91,47 @@ class ReservationRead(BaseModel):
     payment_method: PaymentMethod
     status: ReservationStatus
     expires_at: datetime
+    paid_at: datetime | None = None
+    wompi_transaction_id: str | None = None
 
 
-class RaffleUpdate(BaseModel):
-    name: str | None = Field(default=None, min_length=3, max_length=160)
-    lottery_type: str | None = Field(default=None, min_length=2, max_length=80)
-    total_numbers: int | None = Field(default=None, ge=10, le=10000)
-    ticket_price: int | None = Field(default=None, gt=0)
-    prize_description: str | None = Field(default=None, min_length=5)
-    draw_date: datetime | None = None
-    prize_image_url: str | None = None
+class CheckoutResponse(BaseModel):
+    checkout_url: str
+    reference: str
+    sandbox: bool = True
+
+
+class WompiWebhookPayload(BaseModel):
+    data: dict
+    signature: dict | None = None
+
+
+class WebhookResult(BaseModel):
+    processed: bool
+    status: str
+    reservation_id: int | None = None
+
+
+class WinnerCreate(BaseModel):
+    winner_number: int = Field(ge=0)
+
+
+class RaffleStatsRead(BaseModel):
+    total_raised: int
+    numbers_sold: int
+    numbers_reserved: int
+    numbers_available: int
+    pending_payments: int
+    percentage_sold: float
+
+
+class BuyerRead(BaseModel):
+    name: str
+    phone: str
+    email: EmailStr | None
+    number: int
+    payment_method: PaymentMethod
+    status: ReservationStatus
 
 
 class RaffleDetailRead(RaffleRead):
