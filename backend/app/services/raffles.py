@@ -7,7 +7,7 @@ from sqlmodel import Session, select
 
 from app.core.database import engine
 from app.models.domain import PaymentMethod, Raffle, RaffleStatus, Reservation, ReservationStatus
-from app.models.schemas import NumberState, RaffleCreate, RaffleDetailRead, ReservationCreate
+from app.models.schemas import NumberState, RaffleCreate, RaffleDetailRead, RaffleUpdate, ReservationCreate
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +32,32 @@ def create_raffle(session: Session, admin_id: int, payload: RaffleCreate) -> Raf
         prize_image_url=payload.prize_image_url,
         public_token=create_public_token(session),
     )
+    session.add(raffle)
+    session.commit()
+    session.refresh(raffle)
+    return raffle
+
+
+def has_active_reservations(session: Session, raffle_id: int) -> bool:
+    active = session.exec(
+        select(Reservation).where(
+            Reservation.raffle_id == raffle_id,
+            Reservation.status.in_([ReservationStatus.pending, ReservationStatus.paid]),
+        )
+    ).first()
+    return active is not None
+
+
+def update_raffle(session: Session, raffle: Raffle, payload: RaffleUpdate) -> Raffle:
+    if has_active_reservations(session, raffle.id or 0):
+        if payload.total_numbers is not None or payload.ticket_price is not None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="No se puede cambiar el precio ni la cantidad de numeros porque hay reservas activas",
+            )
+    update_data = payload.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(raffle, field, value)
     session.add(raffle)
     session.commit()
     session.refresh(raffle)

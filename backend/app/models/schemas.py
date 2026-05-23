@@ -82,6 +82,16 @@ class ReservationRead(BaseModel):
     expires_at: datetime
 
 
+class RaffleUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=3, max_length=160)
+    lottery_type: str | None = Field(default=None, min_length=2, max_length=80)
+    total_numbers: int | None = Field(default=None, ge=10, le=10000)
+    ticket_price: int | None = Field(default=None, gt=0)
+    prize_description: str | None = Field(default=None, min_length=5)
+    draw_date: datetime | None = None
+    prize_image_url: str | None = None
+
+
 class RaffleDetailRead(RaffleRead):
     sold_count: int
     reserved_count: int
