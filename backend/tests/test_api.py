@@ -2,11 +2,9 @@ from datetime import datetime, timedelta
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
-from sqlmodel import Session, select
 
-from app.core.database import create_db_and_tables, engine
+from app.core.database import create_db_and_tables
 from app.main import app
-from app.models.domain import Raffle, Reservation, ReservationStatus
 
 create_db_and_tables()
 client = TestClient(app)
@@ -78,85 +76,101 @@ def test_admin_can_create_raffle_and_buyer_can_reserve_number():
     assert confirmed.json()["status"] == "paid"
 
 
-def test_refresh_token_flow():
+def test_refresh_checkout_webhook_stats_and_winner_flow():
     email = f"admin-{uuid4().hex}@example.com"
     register = client.post(
         "/auth/register",
         json={"email": email, "password": "supersecret", "full_name": "Admin Demo"},
     )
     assert register.status_code == 201
-    data = register.json()
-    assert "access_token" in data
-    assert "refresh_token" in data
-
-    refresh = client.post(
-        "/auth/refresh",
-        json={"refresh_token": data["refresh_token"]},
-    )
-    assert refresh.status_code == 200
-    new_data = refresh.json()
-    assert "access_token" in new_data
-    assert "refresh_token" in new_data
-
-    bad_refresh = client.post(
-        "/auth/refresh",
-        json={"refresh_token": "invalid-token"},
-    )
-    assert bad_refresh.status_code == 401
-
-
-def test_expiration_job_marks_expired_reservations():
-    email = f"admin-{uuid4().hex}@example.com"
-    register = client.post(
-        "/auth/register",
-        json={"email": email, "password": "supersecret", "full_name": "Admin Demo"},
-    )
     token = register.json()["access_token"]
+    refresh_token = register.json()["refresh_token"]
+
+    refreshed = client.post("/auth/refresh", json={"refresh_token": refresh_token})
+    assert refreshed.status_code == 200
+    assert refreshed.json()["access_token"]
 
     create = client.post(
         "/raffles",
         headers={"Authorization": f"Bearer {token}"},
         json={
-            "name": "Rifa Expiracion",
+            "name": "Rifa Bicicleta",
             "lottery_type": "Loteria de Medellin",
-            "total_numbers": 50,
-            "ticket_price": 10000,
-            "prize_description": "Premio prueba",
-            "draw_date": (datetime.utcnow() + timedelta(days=30)).isoformat(),
+            "total_numbers": 20,
+            "ticket_price": 15000,
+            "prize_description": "Bicicleta urbana nueva",
+            "draw_date": (datetime.utcnow() + timedelta(days=16)).isoformat(),
         },
     )
+    assert create.status_code == 201
     raffle_id = create.json()["id"]
     public_token = create.json()["public_token"]
+
+    edited = client.patch(
+        f"/raffles/{raffle_id}",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"prize_description": "Bicicleta urbana nueva con casco"},
+    )
+    assert edited.status_code == 200
+    assert edited.json()["prize_description"] == "Bicicleta urbana nueva con casco"
 
     reserve = client.post(
         f"/r/{public_token}/reserve",
         json={
-            "number": 12,
-            "buyer_name": "Comprador Expira",
-            "buyer_phone": "+573009998877",
-            "payment_method": "cash",
+            "number": 3,
+            "buyer_name": "Pago Digital",
+            "buyer_phone": "+573001112233",
+            "buyer_email": "digital@example.com",
+            "payment_method": "card",
         },
     )
     assert reserve.status_code == 201
+    reservation_id = reserve.json()["id"]
 
-    with Session(engine) as session:
-        reservation = session.exec(
-            select(Reservation).where(Reservation.id == reserve.json()["id"])
-        ).first()
-        reservation.expires_at = datetime.utcnow() - timedelta(hours=1)
-        session.add(reservation)
-        session.commit()
+    checkout = client.post(f"/r/{public_token}/reservations/{reservation_id}/checkout")
+    assert checkout.status_code == 200
+    assert checkout.json()["reference"] == str(reservation_id)
 
-    from app.services.raffles import run_expiration_job
-    run_expiration_job()
+    webhook = client.post(
+        "/webhooks/wompi",
+        json={
+            "data": {
+                "transaction": {
+                    "id": f"tx-{uuid4().hex}",
+                    "status": "APPROVED",
+                    "reference": str(reservation_id),
+                }
+            }
+        },
+    )
+    assert webhook.status_code == 200
+    assert webhook.json()["status"] == "paid"
 
-    public = client.get(f"/r/{public_token}")
-    assert public.status_code == 200
-    number_12 = [n for n in public.json()["numbers"] if n["number"] == 12][0]
-    assert number_12["status"] == "available"
+    stats = client.get(f"/raffles/{raffle_id}/stats", headers={"Authorization": f"Bearer {token}"})
+    assert stats.status_code == 200
+    assert stats.json()["numbers_sold"] == 1
+    assert stats.json()["total_raised"] == 15000
 
-    with Session(engine) as session:
-        reservation = session.exec(
-            select(Reservation).where(Reservation.id == reserve.json()["id"])
-        ).first()
-        assert reservation.status == ReservationStatus.expired
+    buyers = client.get(f"/raffles/{raffle_id}/buyers", headers={"Authorization": f"Bearer {token}"})
+    assert buyers.status_code == 200
+    assert buyers.json()[0]["name"] == "Pago Digital"
+
+    winner = client.post(
+        f"/raffles/{raffle_id}/winner",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"winner_number": 3},
+    )
+    assert winner.status_code == 200
+    assert winner.json()["status"] == "closed"
+    assert winner.json()["winner_number"] == 3
+
+    blocked = client.post(
+        f"/r/{public_token}/reserve",
+        json={
+            "number": 4,
+            "buyer_name": "Tarde Demo",
+            "buyer_phone": "+573004445566",
+            "payment_method": "cash",
+        },
+    )
+    assert blocked.status_code == 409

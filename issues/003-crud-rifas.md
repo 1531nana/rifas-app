@@ -8,16 +8,20 @@ Gestion completa de rifas para el admin: crear una rifa con todos sus campos, li
 
 ## Criterios de aceptacion
 
-- [ ] `POST /raffles` crea una rifa con: nombre, tipo de loteria, cantidad de numeros, valor de boleta, descripcion del premio, fecha del sorteo
-- [ ] La rifa creada incluye un `public_token` unico generado automaticamente
-- [ ] `GET /raffles` retorna la lista de rifas del admin autenticado (activas y cerradas)
-- [ ] `GET /raffles/{id}` retorna el detalle de una rifa
-- [ ] `PATCH /raffles/{id}` permite editar descripcion, tipo de loteria y fecha del sorteo
-- [ ] `PATCH /raffles/{id}` rechaza cambios de precio o cantidad de numeros si hay reservas activas
-- [ ] Un admin no puede ver ni editar rifas de otro admin
-- [ ] El frontend muestra la lista de rifas del admin en el dashboard
-- [ ] El frontend tiene formulario de creacion de rifa con todos los campos
-- [ ] El frontend tiene formulario de edicion con los campos permitidos
+- [x] `POST /raffles` crea una rifa con: nombre, tipo de loteria, cantidad de numeros, valor de boleta, descripcion del premio, fecha del sorteo
+- [x] La rifa creada incluye un `public_token` unico generado automaticamente
+- [x] `GET /raffles` retorna la lista de rifas del admin autenticado (activas y cerradas)
+- [x] `GET /raffles/{id}` retorna el detalle de una rifa
+- [x] `PATCH /raffles/{id}` permite editar descripcion, tipo de loteria y fecha del sorteo
+- [x] `PATCH /raffles/{id}` rechaza cambios de precio o cantidad de numeros si hay reservas activas
+- [x] Un admin no puede ver ni editar rifas de otro admin
+- [x] El frontend muestra la lista de rifas del admin en el dashboard
+- [x] El frontend tiene formulario de creacion de rifa con todos los campos
+- [x] El frontend tiene formulario de edicion con los campos permitidos
+
+## Status
+
+COMPLETADO (2026-05-21)
 
 ## Bloqueado por
 

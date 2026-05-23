@@ -8,15 +8,19 @@ Flujo de seleccion y reserva de un numero por parte del comprador. Al hacer clic
 
 ## Criterios de aceptacion
 
-- [ ] `POST /public/reservations` crea una reserva con numero, datos del comprador y metodo de pago seleccionado
-- [ ] Si el numero ya tiene una reserva activa no expirada, retorna 409
-- [ ] La reserva se crea con `expires_at = now() + 48h` para pagos digitales
-- [ ] La reserva se crea con `expires_at = now() + 5 dias` para pago en efectivo
-- [ ] El numero aparece inmediatamente como amarillo (reservado) tras la reserva exitosa
-- [ ] El modal muestra el formulario con: nombre completo (requerido), celular (requerido), email (opcional), metodo de pago
-- [ ] El comprador ve claramente el plazo que tiene para completar el pago
-- [ ] El celular se valida con formato correcto (necesario para WhatsApp)
-- [ ] Si el numero es tomado por otro comprador entre click y confirmacion, se muestra error claro
+- [x] `POST /public/reservations` crea una reserva con numero, datos del comprador y metodo de pago seleccionado ✅
+- [x] Si el numero ya tiene una reserva activa no expirada, retorna 409 ✅
+- [x] La reserva se crea con `expires_at = now() + 48h` para pagos digitales ✅
+- [x] La reserva se crea con `expires_at = now() + 5 dias` para pago en efectivo ✅
+- [x] El numero aparece inmediatamente como amarillo (reservado) tras la reserva exitosa ✅
+- [x] El modal muestra el formulario con: nombre completo (requerido), celular (requerido), email (opcional), metodo de pago ✅
+- [x] El comprador ve claramente el plazo que tiene para completar el pago ✅
+- [x] El celular se valida con formato correcto (necesario para WhatsApp) ✅
+- [x] Si el numero es tomado por otro comprador entre click y confirmacion, se muestra error claro ✅
+
+## Status
+
+✅ COMPLETADO (2026-05-21)
 
 ## Bloqueado por
 

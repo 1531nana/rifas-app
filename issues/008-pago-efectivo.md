@@ -8,12 +8,16 @@ Flujo de pago en efectivo: el comprador selecciona esta opcion y ve las instrucc
 
 ## Criterios de aceptacion
 
-- [ ] Al seleccionar efectivo en el modal, el comprador ve un mensaje con instrucciones (ej. "Contacta al organizador para coordinar el pago. Tienes 5 dias.")
-- [ ] `PATCH /reservations/{id}/confirm-cash` permite al admin dueno de la rifa marcar la reserva como `paid`
-- [ ] Solo el admin dueno de la rifa puede confirmar pagos de esa rifa
-- [ ] Tras confirmar, el numero aparece como rojo (vendido) en la grilla
-- [ ] El panel del admin muestra la lista de compradores con estado de pago, incluyendo pendientes de efectivo
-- [ ] El admin puede filtrar compradores por estado de pago en el panel
+- [x] Al seleccionar efectivo en el modal, el comprador ve un mensaje con instrucciones (ej. "Contacta al organizador para coordinar el pago. Tienes 5 dias.") ✅
+- [x] `PATCH /reservations/{id}/confirm-cash` permite al admin dueno de la rifa marcar la reserva como `paid` ✅
+- [x] Solo el admin dueno de la rifa puede confirmar pagos de esa rifa ✅
+- [x] Tras confirmar, el numero aparece como rojo (vendido) en la grilla ✅
+- [x] El panel del admin muestra la lista de compradores con estado de pago, incluyendo pendientes de efectivo ✅
+- [x] El admin puede filtrar compradores por estado de pago en el panel ✅
+
+## Status
+
+✅ COMPLETADO (2026-05-21)
 
 ## Bloqueado por
 

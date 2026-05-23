@@ -8,14 +8,18 @@ Integracion con Wompi para pagos con tarjeta de credito y PSE. Tras seleccionar 
 
 ## Criterios de aceptacion
 
-- [ ] `POST /public/reservations/{id}/checkout` genera un enlace de pago Wompi para la reserva
-- [ ] El frontend redirige al comprador al checkout de Wompi tras crear la reserva con metodo digital
-- [ ] `POST /webhooks/wompi` procesa la notificacion de Wompi correctamente
-- [ ] Un webhook con estado `APPROVED` marca la reserva como `paid` y el numero como vendido (rojo)
-- [ ] Un webhook con estado `DECLINED` o `VOIDED` libera la reserva (numero vuelve a verde)
-- [ ] El webhook valida la firma de Wompi antes de procesar
-- [ ] El comprador ve una pagina de confirmacion tras pago exitoso
-- [ ] El comprador ve una pagina de error/reintento tras pago fallido
+- [x] `POST /public/reservations/{id}/checkout` genera un enlace de pago Wompi para la reserva ✅
+- [x] El frontend redirige al comprador al checkout de Wompi tras crear la reserva con metodo digital ✅
+- [x] `POST /webhooks/wompi` procesa la notificacion de Wompi correctamente ✅
+- [x] Un webhook con estado `APPROVED` marca la reserva como `paid` y el numero como vendido (rojo) ✅
+- [x] Un webhook con estado `DECLINED` o `VOIDED` libera la reserva (numero vuelve a verde) ✅
+- [x] El webhook valida la firma de Wompi antes de procesar ✅
+- [x] El comprador ve una pagina de confirmacion tras pago exitoso ✅
+- [x] El comprador ve una pagina de error/reintento tras pago fallido ✅
+
+## Status
+
+✅ COMPLETADO (2026-05-21)
 
 ## Bloqueado por
 

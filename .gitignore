@@ -6,6 +6,7 @@ __pycache__/
 rifas.db
 *.sqlite
 *.sqlite3
+uploads/
 
 # Node
 node_modules/
@@ -20,3 +21,4 @@ dist/
 Thumbs.db
 .idea/
 .vscode/
+*.log
