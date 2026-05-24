@@ -86,6 +86,12 @@ export default function PublicRaffle({ token }) {
 
       {notice && <p className="notice">{notice}</p>}
 
+      {isClosed && (
+        <p className="notice" style={{ background: "#fef3cd", border: "1px solid #ffe48a", color: "#664d03" }}>
+          Esta rifa esta cerrada. Ya no se aceptan reservas ni pagos.
+        </p>
+      )}
+
       <section className="metrics compact">
         <article>
           <span>Disponibles</span>
