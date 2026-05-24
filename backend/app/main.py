@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import auth, public, raffles
+from app.api import auth, public, raffles, webhooks
 from app.core.config import get_settings
 from app.core.database import create_db_and_tables
 from app.core.scheduler import start_scheduler, stop_scheduler
@@ -12,7 +12,7 @@ app = FastAPI(title="Rifas App API", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.frontend_origin],
+    allow_origins=settings.allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -21,6 +21,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(raffles.router)
 app.include_router(public.router)
+app.include_router(webhooks.router)
 
 
 @app.on_event("startup")

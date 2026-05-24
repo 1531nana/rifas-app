@@ -1,8 +1,9 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 from app.models.domain import PaymentMethod, RaffleStatus, ReservationStatus
+from app.models.validators import validate_phone
 
 
 class AdminCreate(BaseModel):
@@ -66,6 +67,11 @@ class ReservationCreate(BaseModel):
     buyer_phone: str = Field(min_length=7, max_length=30)
     buyer_email: EmailStr | None = None
     payment_method: PaymentMethod
+
+    @field_validator("buyer_phone")
+    @classmethod
+    def phone_formato_internacional(cls, v: str) -> str:
+        return validate_phone(v)
 
 
 class ReservationRead(BaseModel):
