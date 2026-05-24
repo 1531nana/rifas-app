@@ -8,16 +8,12 @@ Metricas y estadisticas por rifa en el panel del admin. El dashboard muestra par
 
 ## Criterios de aceptacion
 
-- [x] `GET /raffles/{id}/stats` retorna: total recaudado (suma de boletas pagadas), numeros vendidos, numeros reservados, numeros disponibles, pagos pendientes (reservas activas sin pagar) ✅
-- [x] El dashboard del admin muestra las metricas resumidas para cada rifa en la lista ✅
-- [x] La vista detalle de una rifa muestra las estadisticas completas ✅
-- [x] `GET /raffles/{id}/buyers` retorna el listado de compradores con: nombre, celular, email, numero comprado, metodo de pago, estado de pago ✅
-- [x] El admin puede ver la grilla de numeros de su rifa con estados en tiempo real desde su panel ✅
-- [x] La lista de compradores es visible en el panel del admin dentro del detalle de cada rifa ✅
-
-## Status
-
-✅ COMPLETADO (2026-05-21)
+- [ ] `GET /raffles/{id}/stats` retorna: total recaudado (suma de boletas pagadas), numeros vendidos, numeros reservados, numeros disponibles, pagos pendientes (reservas activas sin pagar)
+- [ ] El dashboard del admin muestra las metricas resumidas para cada rifa en la lista
+- [ ] La vista detalle de una rifa muestra las estadisticas completas
+- [ ] `GET /raffles/{id}/buyers` retorna el listado de compradores con: nombre, celular, email, numero comprado, metodo de pago, estado de pago
+- [ ] El admin puede ver la grilla de numeros de su rifa con estados en tiempo real desde su panel
+- [ ] La lista de compradores es visible en el panel del admin dentro del detalle de cada rifa
 
 ## Bloqueado por
 
