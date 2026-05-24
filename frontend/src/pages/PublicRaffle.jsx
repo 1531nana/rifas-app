@@ -56,6 +56,8 @@ export default function PublicRaffle({ token }) {
     return <main className="shell">{message || "Cargando rifa..."}</main>;
   }
 
+  const isClosed = raffle.status === "closed";
+
   return (
     <main className="shell">
       <section className="public-hero">
@@ -70,6 +72,12 @@ export default function PublicRaffle({ token }) {
       </section>
 
       {message && <p className="notice text-center">{message}</p>}
+
+      {isClosed && (
+        <p className="notice" style={{ background: "#fef3cd", border: "1px solid #ffe48a", color: "#664d03" }}>
+          Esta rifa esta cerrada. Ya no se aceptan reservas ni pagos.
+        </p>
+      )}
 
       <section className="metrics compact">
         <article>
@@ -100,7 +108,7 @@ export default function PublicRaffle({ token }) {
             <button
               key={item.number}
               className={`number ${item.status} ${selected === item.number ? "selected" : ""}`}
-              disabled={item.status !== "available"}
+              disabled={isClosed || item.status !== "available"}
               onClick={() => setSelected(item.number)}
             >
               {item.number.toString().padStart(2, "0")}
@@ -109,7 +117,7 @@ export default function PublicRaffle({ token }) {
         </div>
       </section>
 
-      {selected !== null && selectedState === "available" && (
+      {!isClosed && selected !== null && selectedState === "available" && (
         <section className="panel">
           <h2>Reservar numero {selected}</h2>
           <form onSubmit={reserve} className="form">
