@@ -1,5 +1,20 @@
 const API_URL = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 
+import { MENSAJES_VALIDACION, NOMBRES_CAMPO } from "./constants.js";
+
+function parsearMensajeError(detail) {
+  if (!detail) return "Error inesperado";
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) {
+    return detail.map((e) => {
+      const campo = NOMBRES_CAMPO[e.loc?.at(-1)] ?? e.loc?.at(-1) ?? "Campo";
+      const mensaje = MENSAJES_VALIDACION[e.type]?.(e.ctx) ?? e.msg ?? "Valor inválido";
+      return `${campo}: ${mensaje}`;
+    }).join(". ");
+  }
+  return "Error inesperado";
+}
+
 let refreshPromise = null;
 
 export async function request(path, options = {}) {
@@ -26,7 +41,7 @@ export async function request(path, options = {}) {
       });
       const data = await retry.json().catch(() => null);
       if (!retry.ok) {
-        const error = new Error(data?.detail ?? "Error inesperado");
+        const error = new Error(parsearMensajeError(data?.detail));
         error.status = retry.status;
         throw error;
       }
@@ -36,7 +51,7 @@ export async function request(path, options = {}) {
 
   const data = await response.json().catch(() => null);
   if (!response.ok) {
-    const error = new Error(data?.detail ?? "Error inesperado");
+    const error = new Error(parsearMensajeError(data?.detail));
     error.status = response.status;
     throw error;
   }

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { request } from "../lib/api.js";
+import ReservaModal from "./ReservaModal.jsx";
 
 function formatMoney(value) {
   return new Intl.NumberFormat("es-CO", {
@@ -12,17 +13,13 @@ function formatMoney(value) {
 export default function PublicRaffle({ token }) {
   const [raffle, setRaffle] = useState(null);
   const [selected, setSelected] = useState(null);
-  const [buyer, setBuyer] = useState({ buyer_name: "", buyer_phone: "", buyer_email: "", payment_method: "cash" });
-  const [message, setMessage] = useState("");
+  const [modalError, setModalError] = useState("");
+  const [notice, setNotice] = useState("");
 
-  const selectedState = useMemo(
-    () => raffle?.numbers?.find((item) => item.number === selected)?.status,
-    [raffle, selected],
-  );
   const counts = useMemo(() => {
     if (!raffle) return { available: 0, reserved: 0, sold: 0 };
     return raffle.numbers.reduce(
-      (acc, item) => ({ ...acc, [item.status]: acc[item.status] + 1 }),
+      (acc, item) => ({ ...acc, [item.status]: (acc[item.status] || 0) + 1 }),
       { available: 0, reserved: 0, sold: 0 },
     );
   }, [raffle]);
@@ -33,31 +30,49 @@ export default function PublicRaffle({ token }) {
   }
 
   useEffect(() => {
-    loadRaffle().catch((error) => setMessage(error.message));
+    loadRaffle().catch((err) => setNotice(err.message));
   }, [token]);
 
-  async function reserve(event) {
-    event.preventDefault();
+  async function handleConfirm(payload) {
+    setModalError("");
     try {
-      await request(`/r/${token}/reserve`, {
+      const reserva = await request(`/r/${token}/reserve`, {
         method: "POST",
-        body: JSON.stringify({ ...buyer, buyer_email: buyer.buyer_email || null, number: selected }),
+        body: JSON.stringify(payload),
       });
-      setMessage("Numero reservado. Completa el pago para que la boleta participe.");
-      setSelected(null);
-      setBuyer({ buyer_name: "", buyer_phone: "", buyer_email: "", payment_method: "cash" });
-      await loadRaffle();
-    } catch (error) {
-      setMessage(error.message);
+      if (payload.payment_method === "cash") {
+        setSelected(null);
+        setNotice("¡Número reservado! Tienes 5 días para completar el pago en efectivo.");
+        await loadRaffle();
+      }
+      return reserva;
+    } catch (err) {
+      if (err.status === 409) {
+        setModalError("Este número acaba de ser tomado. Elige otro.");
+        await loadRaffle();
+      } else {
+        setModalError(err.message);
+      }
+      return null;
     }
   }
 
   if (!raffle) {
-    return <main className="shell">{message || "Cargando rifa..."}</main>;
+    return <main className="shell">{notice || "Cargando rifa..."}</main>;
   }
+
+  const isClosed = raffle.status === "closed";
+  const selectedState = raffle.numbers.find((n) => n.number === selected)?.status;
+  const showModal = selected !== null && selectedState === "available" && !isClosed;
 
   return (
     <main className="shell">
+      {isClosed && (
+        <p className="notice notice-closed">
+          Esta rifa está cerrada. Ya no se aceptan reservas.
+        </p>
+      )}
+
       <section className="public-hero">
         <div>
           <p className="eyebrow">{raffle.lottery_type}</p>
@@ -69,7 +84,7 @@ export default function PublicRaffle({ token }) {
         {raffle.prize_image_url && <img src={raffle.prize_image_url} alt={`Premio de ${raffle.name}`} />}
       </section>
 
-      {message && <p className="notice text-center">{message}</p>}
+      {notice && <p className="notice">{notice}</p>}
 
       <section className="metrics compact">
         <article>
@@ -88,7 +103,7 @@ export default function PublicRaffle({ token }) {
 
       <section className="panel">
         <div className="section-head">
-          <h2>Selecciona tu numero</h2>
+          <h2>Selecciona tu número</h2>
           <div className="legend">
             <span><i className="dot available" /> Disponible</span>
             <span><i className="dot reserved" /> Reservado</span>
@@ -100,8 +115,8 @@ export default function PublicRaffle({ token }) {
             <button
               key={item.number}
               className={`number ${item.status} ${selected === item.number ? "selected" : ""}`}
-              disabled={item.status !== "available"}
-              onClick={() => setSelected(item.number)}
+              disabled={item.status !== "available" || isClosed}
+              onClick={() => { setNotice(""); setSelected(item.number); }}
             >
               {item.number.toString().padStart(2, "0")}
             </button>
@@ -109,22 +124,14 @@ export default function PublicRaffle({ token }) {
         </div>
       </section>
 
-      {selected !== null && selectedState === "available" && (
-        <section className="panel">
-          <h2>Reservar numero {selected}</h2>
-          <form onSubmit={reserve} className="form">
-            <input placeholder="Nombre completo" value={buyer.buyer_name} onChange={(e) => setBuyer({ ...buyer, buyer_name: e.target.value })} />
-            <input placeholder="Celular" value={buyer.buyer_phone} onChange={(e) => setBuyer({ ...buyer, buyer_phone: e.target.value })} />
-            <input placeholder="Email opcional" type="email" value={buyer.buyer_email} onChange={(e) => setBuyer({ ...buyer, buyer_email: e.target.value })} />
-            <select value={buyer.payment_method} onChange={(e) => setBuyer({ ...buyer, payment_method: e.target.value })}>
-              <option value="cash">Efectivo</option>
-              <option value="card">Tarjeta</option>
-              <option value="pse">PSE</option>
-            </select>
-            <p className="muted">Efectivo tiene plazo de 5 dias. Tarjeta y PSE tienen plazo de 48 horas.</p>
-            <button type="submit">Confirmar reserva</button>
-          </form>
-        </section>
+      {showModal && (
+        <ReservaModal
+          number={selected}
+          token={token}
+          onConfirm={handleConfirm}
+          onClose={() => { setSelected(null); setModalError(""); }}
+          error={modalError}
+        />
       )}
     </main>
   );
