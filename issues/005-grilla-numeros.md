@@ -8,17 +8,13 @@ Grilla visual de numeros en la vista publica de la rifa. Cada numero muestra su 
 
 ## Criterios de aceptacion
 
-- [x] `GET /public/raffles/{public_token}/numbers` retorna la lista de numeros con su estado calculado ✅
-- [x] Los estados posibles son: `available`, `reserved`, `sold` ✅
-- [x] Un numero `reserved` con `expires_at` pasado se retorna como `available` ✅
-- [x] La grilla renderiza todos los numeros de la rifa con el color correspondiente ✅
-- [x] Numeros verdes (disponibles) son clickeables; rojos y amarillos no ✅
-- [x] La grilla es responsive: se adapta correctamente a pantallas de movil ✅
-- [x] El estado de los numeros refleja la realidad en tiempo real al cargar la pagina ✅
-
-## Status
-
-✅ COMPLETADO (2026-05-21)
+- [ ] `GET /public/raffles/{public_token}/numbers` retorna la lista de numeros con su estado calculado
+- [ ] Los estados posibles son: `available`, `reserved`, `sold`
+- [ ] Un numero `reserved` con `expires_at` pasado se retorna como `available`
+- [ ] La grilla renderiza todos los numeros de la rifa con el color correspondiente
+- [ ] Numeros verdes (disponibles) son clickeables; rojos y amarillos no
+- [ ] La grilla es responsive: se adapta correctamente a pantallas de movil
+- [ ] El estado de los numeros refleja la realidad en tiempo real al cargar la pagina
 
 ## Bloqueado por
 

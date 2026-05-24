@@ -10,16 +10,12 @@ El mensaje de confirmacion incluye: nombre del comprador, numero de boleta, nomb
 
 ## Criterios de aceptacion
 
-- [x] El backend tiene un modulo de notificaciones con una funcion `send_whatsapp(phone, template, params)` ✅
-- [x] La funcion envia mensajes via Meta Cloud API correctamente ✅
-- [x] Los errores de envio se registran en logs pero no detienen el flujo principal (fallo silencioso con log) ✅
-- [x] Al confirmar un pago en efectivo (`PATCH /reservations/{id}/confirm-cash`), se envia automaticamente el WhatsApp de confirmacion al numero del comprador ✅
-- [x] El template de confirmacion de pago esta aprobado en Meta Business y configurado ✅
-- [x] Existe un modo de prueba/sandbox para desarrollo que no envia mensajes reales ✅
-
-## Status
-
-✅ COMPLETADO (2026-05-21)
+- [ ] El backend tiene un modulo de notificaciones con una funcion `send_whatsapp(phone, template, params)`
+- [ ] La funcion envia mensajes via Meta Cloud API correctamente
+- [ ] Los errores de envio se registran en logs pero no detienen el flujo principal (fallo silencioso con log)
+- [ ] Al confirmar un pago en efectivo (`PATCH /reservations/{id}/confirm-cash`), se envia automaticamente el WhatsApp de confirmacion al numero del comprador
+- [ ] El template de confirmacion de pago esta aprobado en Meta Business y configurado
+- [ ] Existe un modo de prueba/sandbox para desarrollo que no envia mensajes reales
 
 ## Bloqueado por
 
