@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 
 from app.core.database import get_session
 from app.models.domain import Raffle
-from app.models.schemas import PublicRaffleRead, ReservationCreate, ReservationRead
+from app.models.schemas import NumberState, PublicRaffleRead, ReservationCreate, ReservationRead
 from app.services.raffles import get_number_states, reserve_number
 
 router = APIRouter(prefix="/r", tags=["public"])
@@ -32,6 +32,12 @@ def public_raffle(public_token: str, session: Session = Depends(get_session)) ->
         status=raffle.status,
         numbers=get_number_states(session, raffle),
     )
+
+
+@router.get("/{public_token}/numbers", response_model=list[NumberState])
+def public_raffle_numbers(public_token: str, session: Session = Depends(get_session)) -> list[NumberState]:
+    raffle = get_raffle_by_token(public_token, session)
+    return get_number_states(session, raffle)
 
 
 @router.post("/{public_token}/reserve", response_model=ReservationRead, status_code=201)
