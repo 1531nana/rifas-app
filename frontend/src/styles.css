@@ -76,6 +76,24 @@ a {
   border-radius: 8px;
 }
 
+.prize-placeholder {
+  display: grid;
+  place-items: center;
+  width: min(320px, 40vw);
+  aspect-ratio: 4 / 3;
+  border: 1px dashed #b7c8bf;
+  border-radius: 8px;
+  background: #f7faf8;
+  color: #4f5d57;
+  text-align: center;
+  padding: 18px;
+}
+
+.prize-placeholder span {
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+}
+
 .eyebrow {
   margin: 0 0 8px;
   color: #607068;
@@ -133,6 +151,14 @@ h2 {
   color: #607068;
   pointer-events: none;
   white-space: nowrap;
+}
+
+.file-field label {
+  position: static;
+  display: block;
+  margin-bottom: 6px;
+  background: transparent;
+  padding: 0;
 }
 
 .form input,
@@ -404,6 +430,10 @@ th {
   }
 
   .public-hero img {
+    width: 100%;
+  }
+
+  .prize-placeholder {
     width: 100%;
   }
 }

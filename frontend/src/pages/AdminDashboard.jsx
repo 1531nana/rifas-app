@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { API_URL, request } from "../lib/api.js";
+import { request, uploadFile } from "../lib/api.js";
 
 const emptyRaffle = {
   name: "Rifa Moto Mayo",
@@ -20,16 +20,18 @@ function formatMoney(value) {
 }
 
 export default function AdminDashboard() {
-   const [mode, setMode] = useState("login");
-   const [token, setToken] = useState(() => localStorage.getItem("rifas_token") ?? "");
-   const [credentials, setCredentials] = useState({ email: "", password: "", full_name: "" });
-   const [raffle, setRaffle] = useState(emptyRaffle);
-   const [raffles, setRaffles] = useState([]);
-   const [selectedRaffle, setSelectedRaffle] = useState(null);
-   const [editingRaffle, setEditingRaffle] = useState(null);
-   const [message, setMessage] = useState({ text: "", error: false });
-   const [loading, setLoading] = useState(false);
-   const [paymentFilter, setPaymentFilter] = useState("all"); // all, pending, paid, expired
+  const [mode, setMode] = useState("login");
+  const [token, setToken] = useState(() => localStorage.getItem("rifas_token") ?? "");
+  const [credentials, setCredentials] = useState({ email: "", password: "", full_name: "" });
+  const [raffle, setRaffle] = useState(emptyRaffle);
+  const [raffleImage, setRaffleImage] = useState(null);
+  const [raffles, setRaffles] = useState([]);
+  const [selectedRaffle, setSelectedRaffle] = useState(null);
+  const [editingRaffle, setEditingRaffle] = useState(null);
+  const [editingImage, setEditingImage] = useState(null);
+  const [message, setMessage] = useState({ text: "", error: false });
+  const [loading, setLoading] = useState(false);
+  const [paymentFilter, setPaymentFilter] = useState("all");
 
   function setOk(text) { setMessage({ text, error: false }); }
   function setErr(text) { setMessage({ text, error: true }); }
@@ -117,7 +119,11 @@ export default function AdminDashboard() {
         prize_image_url: raffle.prize_image_url || null,
       };
       const created = await request("/raffles", { method: "POST", body: JSON.stringify(payload) });
+      if (raffleImage) {
+        await uploadFile(`/raffles/${created.id}/image`, raffleImage);
+      }
       setRaffle(emptyRaffle);
+      setRaffleImage(null);
       setOk("Rifa creada. Ya puedes compartir el enlace público.");
       await loadRaffles();
       await loadRaffleDetail(created.id);
@@ -156,10 +162,12 @@ export default function AdminDashboard() {
       draw_date: drawDate,
       prize_image_url: raffleData.prize_image_url ?? "",
     });
+    setEditingImage(null);
   }
 
   function cancelEdit() {
     setEditingRaffle(null);
+    setEditingImage(null);
   }
 
   async function submitEdit(event) {
@@ -175,7 +183,11 @@ export default function AdminDashboard() {
         prize_image_url: editingRaffle.prize_image_url || null,
       };
       await request(`/raffles/${selectedRaffle.id}`, { method: "PATCH", body: JSON.stringify(payload) });
+      if (editingImage) {
+        await uploadFile(`/raffles/${selectedRaffle.id}/image`, editingImage);
+      }
       setEditingRaffle(null);
+      setEditingImage(null);
       setOk("Rifa actualizada correctamente.");
       await loadRaffleDetail(selectedRaffle.id);
       await loadRaffles();
@@ -292,6 +304,10 @@ export default function AdminDashboard() {
                   <label>URL imagen del premio (opcional)</label>
                   <input value={raffle.prize_image_url} onChange={(e) => setRaffle({ ...raffle, prize_image_url: e.target.value })} />
                 </div>
+                <div className="field file-field">
+                  <label>Subir imagen del premio</label>
+                  <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setRaffleImage(e.target.files?.[0] ?? null)} />
+                </div>
                 <button type="submit" disabled={loading}>Crear rifa</button>
               </form>
             </section>
@@ -367,6 +383,10 @@ export default function AdminDashboard() {
                   <div className="field">
                     <label>URL imagen del premio (opcional)</label>
                     <input value={editingRaffle.prize_image_url} onChange={(e) => setEditingRaffle({ ...editingRaffle, prize_image_url: e.target.value })} />
+                  </div>
+                  <div className="field file-field">
+                    <label>Subir nueva imagen</label>
+                    <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setEditingImage(e.target.files?.[0] ?? null)} />
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
                     <button type="submit" disabled={loading}>Guardar cambios</button>

@@ -1,15 +1,25 @@
 from datetime import datetime, timedelta
 import logging
+from pathlib import Path
 from secrets import token_urlsafe
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException, UploadFile, status
+import httpx
 from sqlmodel import Session, select
 
+from app.core.config import get_settings
 from app.core.database import engine
 from app.models.domain import PaymentMethod, Raffle, RaffleStatus, Reservation, ReservationStatus
 from app.models.schemas import NumberState, RaffleCreate, RaffleDetailRead, RaffleUpdate, ReservationCreate
+from app.services.notifications import send_whatsapp
 
 logger = logging.getLogger(__name__)
+MAX_IMAGE_BYTES = 5 * 1024 * 1024
+IMAGE_CONTENT_TYPES = {
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/webp": ".webp",
+}
 
 
 def create_public_token(session: Session) -> str:
@@ -62,6 +72,55 @@ def update_raffle(session: Session, raffle: Raffle, payload: RaffleUpdate) -> Ra
     session.commit()
     session.refresh(raffle)
     return raffle
+
+
+def upload_prize_image(session: Session, raffle: Raffle, file: UploadFile) -> Raffle:
+    extension = IMAGE_CONTENT_TYPES.get(file.content_type or "")
+    if extension is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Solo se aceptan imagenes JPG, PNG o WebP")
+
+    content = file.file.read(MAX_IMAGE_BYTES + 1)
+    if not content:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="La imagen esta vacia")
+    if len(content) > MAX_IMAGE_BYTES:
+        raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="La imagen supera 5MB")
+
+    settings = get_settings()
+    filename = f"raffle-{raffle.id}-{token_urlsafe(8)}{extension}"
+    if settings.cloudinary_cloud_name and settings.cloudinary_upload_preset:
+        raffle.prize_image_url = upload_to_cloudinary(settings, filename, content, file.content_type or "application/octet-stream")
+    else:
+        upload_dir = Path(settings.upload_dir)
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        target = upload_dir / filename
+        target.write_bytes(content)
+        raffle.prize_image_url = f"{settings.app_base_url.rstrip('/')}/uploads/{filename}"
+
+    session.add(raffle)
+    session.commit()
+    session.refresh(raffle)
+    return raffle
+
+
+def upload_to_cloudinary(settings, filename: str, content: bytes, content_type: str) -> str:
+    public_id = filename.rsplit(".", 1)[0]
+    try:
+        response = httpx.post(
+            f"https://api.cloudinary.com/v1_1/{settings.cloudinary_cloud_name}/image/upload",
+            data={"upload_preset": settings.cloudinary_upload_preset, "public_id": public_id},
+            files={"file": (filename, content, content_type)},
+            timeout=20,
+        )
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="No se pudo subir la imagen") from exc
+
+    if response.status_code >= 400:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Cloudinary rechazo la imagen")
+
+    image_url = response.json().get("secure_url") or response.json().get("url")
+    if not image_url:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Cloudinary no retorno URL de imagen")
+    return image_url
 
 
 def get_owned_raffle(session: Session, admin_id: int, raffle_id: int) -> Raffle:
@@ -203,7 +262,22 @@ def confirm_cash_payment(session: Session, raffle: Raffle, reservation_id: int) 
     session.add(reservation)
     session.commit()
     session.refresh(reservation)
+    send_payment_confirmation(reservation, raffle)
     return reservation
+
+
+def send_payment_confirmation(reservation: Reservation, raffle: Raffle) -> bool:
+    settings = get_settings()
+    return send_whatsapp(
+        reservation.buyer_phone,
+        settings.meta_template_payment_confirmation,
+        {
+            "buyer_name": reservation.buyer_name,
+            "number": reservation.number,
+            "raffle_name": raffle.name,
+            "draw_date": raffle.draw_date.isoformat(),
+        },
+    )
 
 
 def run_expiration_job() -> None:

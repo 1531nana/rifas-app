@@ -1,12 +1,16 @@
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
-from app.api import auth, public, raffles, webhooks
+from app.api import auth, public, raffles, reservations, webhooks
 from app.core.config import get_settings
 from app.core.database import create_db_and_tables
 from app.core.scheduler import start_scheduler, stop_scheduler
 
 settings = get_settings()
+Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)
 
 app = FastAPI(title="Rifas App API", version="0.1.0")
 
@@ -20,8 +24,11 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(raffles.router)
+app.include_router(reservations.router)
 app.include_router(public.router)
+app.include_router(public.compat_router)
 app.include_router(webhooks.router)
+app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
 
 
 @app.on_event("startup")

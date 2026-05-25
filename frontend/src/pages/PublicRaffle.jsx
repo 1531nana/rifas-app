@@ -81,7 +81,14 @@ export default function PublicRaffle({ token }) {
           <strong>{formatMoney(raffle.ticket_price)} por boleta</strong>
           <p className="muted">Sorteo: {new Date(raffle.draw_date).toLocaleString("es-CO")}</p>
         </div>
-        {raffle.prize_image_url && <img src={raffle.prize_image_url} alt={`Premio de ${raffle.name}`} />}
+        {raffle.prize_image_url ? (
+          <img src={raffle.prize_image_url} alt={`Premio de ${raffle.name}`} />
+        ) : (
+          <div className="prize-placeholder">
+            <strong>Premio</strong>
+            <span>{raffle.prize_description}</span>
+          </div>
+        )}
       </section>
 
       {notice && <p className="notice">{notice}</p>}

@@ -58,6 +58,33 @@ export async function request(path, options = {}) {
   return data;
 }
 
+export async function uploadFile(path, file) {
+  const token = localStorage.getItem("rifas_token");
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(`${API_URL}${path}`, {
+    method: "POST",
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: formData,
+  });
+
+  if (response.status === 401 && localStorage.getItem("rifas_refresh")) {
+    const newToken = await attemptRefresh();
+    if (newToken) return uploadFile(path, file);
+  }
+
+  const data = await response.json().catch(() => null);
+  if (!response.ok) {
+    const error = new Error(parsearMensajeError(data?.detail));
+    error.status = response.status;
+    throw error;
+  }
+  return data;
+}
+
 async function attemptRefresh() {
   if (refreshPromise) return refreshPromise;
 

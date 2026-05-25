@@ -10,6 +10,7 @@ from app.services.raffles import get_number_states, reserve_number
 from app.services.wompi import generar_url_checkout, referencia_reserva
 
 router = APIRouter(prefix="/r", tags=["public"])
+compat_router = APIRouter(prefix="/public", tags=["public"])
 
 
 def get_raffle_by_token(public_token: str, session: Session) -> Raffle:
@@ -22,6 +23,10 @@ def get_raffle_by_token(public_token: str, session: Session) -> Raffle:
 @router.get("/{public_token}", response_model=PublicRaffleRead)
 def public_raffle(public_token: str, session: Session = Depends(get_session)) -> PublicRaffleRead:
     raffle = get_raffle_by_token(public_token, session)
+    return build_public_raffle_response(session, raffle)
+
+
+def build_public_raffle_response(session: Session, raffle: Raffle) -> PublicRaffleRead:
     return PublicRaffleRead(
         id=raffle.id or 0,
         name=raffle.name,
@@ -35,6 +40,12 @@ def public_raffle(public_token: str, session: Session = Depends(get_session)) ->
         status=raffle.status,
         numbers=get_number_states(session, raffle),
     )
+
+
+@compat_router.get("/raffles/{public_token}", response_model=PublicRaffleRead)
+def public_raffle_compat(public_token: str, session: Session = Depends(get_session)) -> PublicRaffleRead:
+    raffle = get_raffle_by_token(public_token, session)
+    return build_public_raffle_response(session, raffle)
 
 
 @router.get("/{public_token}/numbers", response_model=list[NumberState])
