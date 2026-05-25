@@ -1,5 +1,5 @@
 export const AVISO_PAGO = {
-  cash: "Tendrás 5 días hábiles para entregar el efectivo y confirmar tu boleta.",
+  cash: "Contacta al organizador para coordinar el pago. Tienes 5 días.",
   card: "Serás redirigido a Wompi para completar el pago con tarjeta ahora mismo.",
   pse: "Serás redirigido a Wompi para completar el pago por PSE ahora mismo.",
 };

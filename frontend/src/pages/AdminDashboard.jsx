@@ -20,15 +20,16 @@ function formatMoney(value) {
 }
 
 export default function AdminDashboard() {
-  const [mode, setMode] = useState("login");
-  const [token, setToken] = useState(() => localStorage.getItem("rifas_token") ?? "");
-  const [credentials, setCredentials] = useState({ email: "", password: "", full_name: "" });
-  const [raffle, setRaffle] = useState(emptyRaffle);
-  const [raffles, setRaffles] = useState([]);
-  const [selectedRaffle, setSelectedRaffle] = useState(null);
-  const [editingRaffle, setEditingRaffle] = useState(null);
-  const [message, setMessage] = useState({ text: "", error: false });
-  const [loading, setLoading] = useState(false);
+   const [mode, setMode] = useState("login");
+   const [token, setToken] = useState(() => localStorage.getItem("rifas_token") ?? "");
+   const [credentials, setCredentials] = useState({ email: "", password: "", full_name: "" });
+   const [raffle, setRaffle] = useState(emptyRaffle);
+   const [raffles, setRaffles] = useState([]);
+   const [selectedRaffle, setSelectedRaffle] = useState(null);
+   const [editingRaffle, setEditingRaffle] = useState(null);
+   const [message, setMessage] = useState({ text: "", error: false });
+   const [loading, setLoading] = useState(false);
+   const [paymentFilter, setPaymentFilter] = useState("all"); // all, pending, paid, expired
 
   function setOk(text) { setMessage({ text, error: false }); }
   function setErr(text) { setMessage({ text, error: true }); }
@@ -378,22 +379,34 @@ export default function AdminDashboard() {
               ) : (
                 <>
                   <div className="metrics compact">
-                    <article>
-                      <span>Pagadas</span>
-                      <strong>{selectedRaffle.sold_count}</strong>
-                    </article>
-                    <article>
-                      <span>Reservadas</span>
-                      <strong>{selectedRaffle.reserved_count}</strong>
-                    </article>
-                    <article>
-                      <span>Disponibles</span>
-                      <strong>{selectedRaffle.available_count}</strong>
-                    </article>
-                    <article>
-                      <span>Recaudado</span>
-                      <strong>{formatMoney(selectedRaffle.paid_total)}</strong>
-                    </article>
+                   <article>
+                     <span>Pagadas</span>
+                     <strong>{selectedRaffle.sold_count}</strong>
+                   </article>
+                   <article>
+                     <span>Reservadas</span>
+                     <strong>{selectedRaffle.reserved_count}</strong>
+                   </article>
+                   <article>
+                     <span>Disponibles</span>
+                     <strong>{selectedRaffle.available_count}</strong>
+                   </article>
+                   <article>
+                     <span>Recaudado</span>
+                     <strong>{formatMoney(selectedRaffle.paid_total)}</strong>
+                   </article>
+                   <div className="field">
+                     <label>Filtrar por estado de pago</label>
+                     <select
+                       value={paymentFilter}
+                       onChange={(e) => setPaymentFilter(e.target.value)}
+                     >
+                       <option value="all">Todos</option>
+                       <option value="pending">Pendientes</option>
+                       <option value="paid">Pagadas</option>
+                       <option value="expired">Expiradas</option>
+                     </select>
+                   </div>
                   </div>
 
                   <div className="table-wrap">
@@ -408,35 +421,43 @@ export default function AdminDashboard() {
                           <th>Accion</th>
                         </tr>
                       </thead>
-                      <tbody>
-                        {selectedRaffle.reservations.length === 0 && (
-                          <tr>
-                            <td colSpan="6">Sin compradores registrados todavia.</td>
-                          </tr>
-                        )}
-                        {selectedRaffle.reservations.map((reservation) => (
-                          <tr key={reservation.id}>
-                            <td>{reservation.number}</td>
-                            <td>{reservation.buyer_name}</td>
-                            <td>{reservation.buyer_phone}</td>
-                            <td>{reservation.payment_method}</td>
-                            <td>
-                              <span className={`badge badge-${reservation.status}`}>
-                                {{ pending: "Pendiente", paid: "Pagado", expired: "Expirado" }[reservation.status] ?? reservation.status}
-                              </span>
-                            </td>
-                            <td>
-                              {reservation.payment_method === "cash" && reservation.status === "pending" ? (
-                                <button onClick={() => confirmCash(reservation.id)} disabled={loading}>
-                                  Confirmar efectivo
-                                </button>
-                              ) : (
-                                <span className="muted">Sin accion</span>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
+                       <tbody>
+                         {selectedRaffle.reservations.length === 0 && (
+                           <tr>
+                             <td colSpan="6">Sin compradores registrados todavia.</td>
+                           </tr>
+                         )}
+                         {selectedRaffle.reservations
+                           .filter(reservation => {
+                             if (paymentFilter === "all") return true;
+                             if (paymentFilter === "pending") return reservation.status === "pending";
+                             if (paymentFilter === "paid") return reservation.status === "paid";
+                             if (paymentFilter === "expired") return reservation.status === "expired";
+                             return true;
+                           })
+                           .map((reservation) => (
+                             <tr key={reservation.id}>
+                               <td>{reservation.number}</td>
+                               <td>{reservation.buyer_name}</td>
+                               <td>{reservation.buyer_phone}</td>
+                               <td>{reservation.payment_method}</td>
+                               <td>
+                                 <span className={`badge badge-${reservation.status}`}>
+                                   {{ pending: "Pendiente", paid: "Pagado", expired: "Expirado" }[reservation.status] ?? reservation.status}
+                                 </span>
+                               </td>
+                               <td>
+                                 {reservation.payment_method === "cash" && reservation.status === "pending" ? (
+                                   <button onClick={() => confirmCash(reservation.id)} disabled={loading}>
+                                     Confirmar efectivo
+                                   </button>
+                                 ) : (
+                                   <span className="muted">Sin accion</span>
+                                 )}
+                               </td>
+                             </tr>
+                           ))}
+                       </tbody>
                     </table>
                   </div>
                 </>
