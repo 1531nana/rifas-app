@@ -71,7 +71,7 @@ def test_admin_can_create_raffle_and_buyer_can_reserve_number():
 
     reservation_id = reserve.json()["id"]
     confirmed = client.patch(
-        f"/reservations/{reservation_id}/confirm-cash",
+        f"/raffles/reservations/{reservation_id}/confirm-cash",
         headers={"Authorization": f"Bearer {token}"},
     )
     assert confirmed.status_code == 200
