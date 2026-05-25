@@ -86,6 +86,7 @@ class ReservationRead(BaseModel):
     payment_method: PaymentMethod
     status: ReservationStatus
     expires_at: datetime
+    paid_at: datetime | None = None
 
 
 class RaffleUpdate(BaseModel):
