@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rifas App | Software Journey</title>
+  <link rel="stylesheet" href="software-journey.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#inicio">Rifas App</a>
+    <nav aria-label="Secciones del Software Journey">
+      <a href="#teoria">Marco teorico</a>
+      <a href="#tracer">Tracer Bullet</a>
+      <a href="#modulos">Modulos</a>
+      <a href="#retrospectiva">Retrospectiva</a>
+      <a href="#entrega">Entrega</a>
+    </nav>
+  </header>
+
+  <main id="inicio">
+    <section class="hero section-band">
+      <div class="section-body hero-layout">
+        <div class="hero-copy">
+          <p class="eyebrow">Tarea 3 - Software Journey y auditoria arquitectonica</p>
+          <h1>Rifas App: bitacora critica de co-creacion hombre-maquina</h1>
+          <p class="lead">
+            Este sitio consolida la historia tecnica del proyecto, evalua sus
+            decisiones con el vocabulario de John Ousterhout y deja evidencia
+            navegable del cierre entre PRD, issues, agentes, codigo y pruebas.
+          </p>
+          <div class="hero-facts" aria-label="Resumen de entrega">
+            <span>Rama auditada: develop</span>
+            <span>Base estable propuesta: main</span>
+            <span>Documentacion: /docs</span>
+          </div>
+        </div>
+
+        <div class="journey-map" aria-label="Mapa visual del viaje de software">
+          <div class="map-node map-start">
+            <span>Brief</span>
+            <strong>Problema</strong>
+          </div>
+          <div class="map-node">
+            <span>grill-me</span>
+            <strong>Arbol de diseno</strong>
+          </div>
+          <div class="map-node map-risk">
+            <span>Tracer Bullet</span>
+            <strong>Reserva + pago</strong>
+          </div>
+          <div class="map-node">
+            <span>Ralph</span>
+            <strong>Issues AFK/HITL</strong>
+          </div>
+          <div class="map-node map-end">
+            <span>Checkpoint</span>
+            <strong>Auditoria</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="teoria" class="section-band theory-band">
+      <div class="section-body">
+        <div class="section-heading">
+          <p class="eyebrow">Marco teorico obligatorio</p>
+          <h2>Lectura del codigo desde A Philosophy of Software Design</h2>
+          <p>
+            La evaluacion usa la terminologia de John Ousterhout: Complexity,
+            Deep Modules, Shallow Modules, Information Hiding, Information
+            Leakage y Change Amplification.
+          </p>
+        </div>
+
+        <div class="concept-grid">
+          <article>
+            <h3>Complexity</h3>
+            <p>
+              La complejidad aparece cuando el cambio exige demasiada carga
+              mental: entender estados, proveedores, permisos, efectos de red
+              y dependencias cruzadas antes de hacer una modificacion simple.
+            </p>
+          </article>
+          <article>
+            <h3>Deep Modules</h3>
+            <p>
+              Un modulo profundo ofrece una interfaz pequena y esconde una
+              implementacion grande. En este proyecto, los mejores ejemplos
+              viven en servicios de dominio y en el cliente HTTP del frontend.
+            </p>
+          </article>
+          <article>
+            <h3>Shallow Modules</h3>
+            <p>
+              Un modulo superficial obliga a pagar mucho costo de interfaz por
+              poca implementacion. El riesgo aparecio cuando endpoints,
+              componentes y proveedores intentaron crecer como piezas aisladas.
+            </p>
+          </article>
+          <article>
+            <h3>Information Leakage</h3>
+            <p>
+              Hay fuga de informacion cuando una decision interna se filtra a
+              otra capa. La auditoria revisa si la UI conoce detalles de SQL,
+              Cloudinary, Meta Cloud API, Wompi o firmas de integridad.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="tracer" class="section-band">
+      <div class="section-body two-column">
+        <div>
+          <p class="eyebrow">Seccion 1</p>
+          <h2>La Bala Trazadora y el enrutamiento de las skills</h2>
+          <p>
+            La skill <code>.claude/skills/grill-me</code> forzo al equipo a
+            recorrer el arbol de decisiones antes de escribir codigo: comprador
+            sin cuenta, administrador autenticado, token publico opaco, estados
+            de numero calculados y proveedores externos con modo sandbox.
+          </p>
+          <p>
+            Esa entrevista cambio la suposicion inicial de "hacer pantallas" por
+            una estrategia de arquitectura: primero probar el tramo mas incierto
+            del sistema, donde una seleccion visual se convertia en reserva,
+            pago, estado de numero y feedback al usuario.
+          </p>
+        </div>
+
+        <div class="evidence-panel">
+          <h3>Tracer Bullet elegido</h3>
+          <p>
+            El issue de integracion mas riesgoso fue la cadena
+            <code>GET /r/{public_token}</code> -> grilla -> reserva ->
+            checkout/efectivo -> webhook o confirmacion manual.
+          </p>
+          <ul>
+            <li><code>backend/app/services/raffles.py</code> centraliza reserva, expiracion y confirmacion.</li>
+            <li><code>backend/app/services/wompi.py</code> concentra referencia, firma y webhook.</li>
+            <li><code>frontend/src/pages/PublicRaffle.jsx</code> consume estados simples: available, reserved, sold.</li>
+            <li><code>backend/tests/test_006_reserva_numeros.py</code> y <code>test_007_pago_wompi.py</code> validan el tramo temprano.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="section-body">
+        <div class="timeline" aria-label="Linea de tiempo de reduccion de riesgo">
+          <article>
+            <span>1</span>
+            <h3>PRD y brief</h3>
+            <p>El dominio se redujo a rifa, comprador, numero, reserva y pago.</p>
+          </article>
+          <article>
+            <span>2</span>
+            <h3>grill-me</h3>
+            <p>Las preguntas cerraron decisiones que no debian quedar escondidas en la UI.</p>
+          </article>
+          <article>
+            <span>3</span>
+            <h3>Vertical slice</h3>
+            <p>La reserva de numero conecto frontend, API, base de datos y reglas de negocio.</p>
+          </article>
+          <article>
+            <span>4</span>
+            <h3>Feedback loop</h3>
+            <p>Ralph avanzo una issue por corrida con TDD y pruebas antes del cierre.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="modulos" class="section-band module-band">
+      <div class="section-body">
+        <div class="section-heading">
+          <p class="eyebrow">Seccion 2</p>
+          <h2>Anatomia de la complejidad</h2>
+          <p>
+            La pregunta no es si un archivo es largo o corto, sino si su
+            interfaz compra una reduccion real de complejidad para el resto del
+            sistema.
+          </p>
+        </div>
+
+        <div class="module-table" role="table" aria-label="Analisis de modulos">
+          <div class="table-row table-head" role="row">
+            <div role="columnheader">Modulo</div>
+            <div role="columnheader">Lectura arquitectonica</div>
+            <div role="columnheader">Veredicto</div>
+          </div>
+          <div class="table-row" role="row">
+            <div role="cell"><code>services/raffles.py</code></div>
+            <div role="cell">
+              Ofrece funciones como <code>reserve_number</code>,
+              <code>get_number_states</code>, <code>confirm_cash_payment</code>
+              y <code>upload_prize_image</code>. Detras de esas firmas esconde
+              vencimientos, conteos, conflictos, persistencia y notificacion.
+            </div>
+            <div role="cell"><strong>Deep Module</strong></div>
+          </div>
+          <div class="table-row" role="row">
+            <div role="cell"><code>services/wompi.py</code></div>
+            <div role="cell">
+              La API superior no necesita saber como se arma una referencia,
+              una firma SHA256 o una lectura de webhook. Solo recibe una URL,
+              una validacion o una tupla de resultado.
+            </div>
+            <div role="cell"><strong>Deep Module</strong></div>
+          </div>
+          <div class="table-row" role="row">
+            <div role="cell"><code>frontend/src/lib/api.js</code></div>
+            <div role="cell">
+              La UI llama <code>request</code> y <code>uploadFile</code>; el
+              modulo encapsula URL base, JWT, refresh token, errores de FastAPI
+              y formularios multipart.
+            </div>
+            <div role="cell"><strong>Deep Module</strong></div>
+          </div>
+          <div class="table-row" role="row">
+            <div role="cell"><code>api/raffles.py</code></div>
+            <div role="cell">
+              Los routers son delgados, pero el endpoint de confirmacion por
+              reserva repite busqueda y permisos por compatibilidad. Es una
+              zona donde la interfaz se ensancho para no romper clientes.
+            </div>
+            <div role="cell"><strong>Shallow risk</strong></div>
+          </div>
+          <div class="table-row" role="row">
+            <div role="cell"><code>AdminDashboard.jsx</code></div>
+            <div role="cell">
+              La pantalla concentra login, creacion, edicion, carga de imagen,
+              listado, filtros y confirmacion de efectivo. Funciona, pero cada
+              cambio de admin puede tocar una superficie grande.
+            </div>
+            <div role="cell"><strong>Change Amplification</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-body two-column">
+        <div class="code-card">
+          <h3>Interfaz pequena, implementacion profunda</h3>
+          <pre><code>def reserve_number(session, raffle, payload):
+    expire_old_reservations(session, raffle.id or 0)
+    existing = session.exec(select(Reservation).where(...)).first()
+    if existing:
+        raise HTTPException(status_code=409)
+    timeout = timedelta(days=5) if payload.payment_method == cash else timedelta(hours=48)
+    ...
+</code></pre>
+        </div>
+        <div class="code-card">
+          <h3>Information Hiding aplicado</h3>
+          <pre><code>export async function request(path, options = {}) {
+  const token = localStorage.getItem("rifas_token");
+  const response = await fetch(`${API_URL}${path}`, ...);
+  if (response.status === 401) {
+    const newToken = await attemptRefresh();
+    ...
+  }
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="section-body leakage-grid">
+        <article>
+          <h3>Fuga evitada: base de datos</h3>
+          <p>
+            La UI no consulta tablas ni estados SQLModel. Recibe DTOs con
+            conteos y estados de dominio. La regla "sold = reserva pagada" vive
+            en <code>get_number_states</code>, no en React.
+          </p>
+        </article>
+        <article>
+          <h3>Fuga evitada: proveedores externos</h3>
+          <p>
+            Cloudinary y Meta Cloud API quedan detras de servicios. En local,
+            el sandbox registra intenciones y evita que una credencial ausente
+            bloquee la confirmacion de un pago.
+          </p>
+        </article>
+        <article>
+          <h3>Residuo aceptado</h3>
+          <p>
+            Los estados <code>pending</code>, <code>paid</code> y
+            <code>expired</code> llegan al dashboard porque son lenguaje del
+            dominio. No se consideran fuga mientras no arrastren detalles de
+            tablas, proveedores o transacciones internas.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section id="retrospectiva" class="section-band">
+      <div class="section-body two-column">
+        <div>
+          <p class="eyebrow">Seccion 3</p>
+          <h2>Veredicto retrospectivo de los sub-agentes</h2>
+          <p>
+            El archivo <code>architecture-checkpoint.md</code> registra tres
+            propuestas: extender el servicio de aplicacion, crear puertos por
+            integracion o resolverlo directo en endpoints. La solucion final
+            fue hibrida: servicio de aplicacion para el flujo transaccional y
+            puerto simple para WhatsApp.
+          </p>
+          <p>
+            En retrospectiva, esa eleccion acelero la segunda mitad: agregar
+            imagen de premio y notificacion no obligo a reescribir rutas
+            publicas ni componentes de comprador. El sistema gano elasticidad
+            porque las integraciones quedaron como decisiones ocultas.
+          </p>
+        </div>
+        <div class="verdict">
+          <h3>Buen gusto arquitectonico</h3>
+          <p>
+            El mejor gusto del proyecto esta en mantener reglas de negocio
+            cerca del dominio y proveedores externos lejos de la UI. El punto
+            fragil es la pantalla de administracion: aun cumple, pero su tamano
+            anuncia futuras modificaciones consecuentes si se agregan ganador,
+            recordatorios y metricas avanzadas.
+          </p>
+        </div>
+      </div>
+
+      <div class="section-body agent-grid">
+        <article>
+          <span>A</span>
+          <h3>Servicio de aplicacion extendido</h3>
+          <p>
+            Mantiene routers delgados y aprovecha la cohesion existente de
+            rifa, reserva y pago.
+          </p>
+        </article>
+        <article>
+          <span>B</span>
+          <h3>Puertos por integracion</h3>
+          <p>
+            Hace reemplazables Cloudinary y Meta Cloud API, especialmente para
+            pruebas y sandbox.
+          </p>
+        </article>
+        <article>
+          <span>C</span>
+          <h3>Endpoints directos</h3>
+          <p>
+            Era el camino mas rapido, pero tambien el que mas exponia
+            Information Leakage y duplicacion.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section id="entrega" class="section-band delivery-band">
+      <div class="section-body">
+        <div class="section-heading">
+          <p class="eyebrow">Entregables requeridos</p>
+          <h2>Cierre de la entrega final</h2>
+        </div>
+
+        <div class="delivery-list">
+          <article>
+            <h3>Repositorio limpio</h3>
+            <p>
+              La rama auditada es <code>develop</code>; el PR final propone
+              llevar este cierre a <code>main</code>, que es la rama estable del
+              repositorio.
+            </p>
+            <a href="https://github.com/1531nana/rifas-app/tree/main">Ver rama main</a>
+          </article>
+          <article>
+            <h3>Sitio de documentacion</h3>
+            <p>
+              Este archivo funciona como sitio estatico dentro de
+              <code>/docs</code>. Puede abrirse directo o publicarse desde
+              GitHub Pages usando la carpeta <code>docs</code>.
+            </p>
+            <a href="./index.html">Abrir Software Journey</a>
+          </article>
+          <article>
+            <h3>Evidencia consultada</h3>
+            <p>
+              PRD, issues, README, handoffs, checkpoint arquitectonico,
+              servicios backend, cliente API frontend y suite de pruebas.
+            </p>
+            <a href="https://github.com/1531nana/rifas-app/blob/main/architecture-checkpoint.md">Leer checkpoint</a>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
