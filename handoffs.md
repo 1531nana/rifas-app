@@ -98,6 +98,28 @@ Pendientes exactos:
 
 ---
 
+## Handoff - Issues #13, #14 + Checkpoint Arquitectónico
+
+Fecha: 2026-06-06
+
+Alcance cerrado:
+- Issue #14: endpoints `GET /raffles/{id}/stats` y `GET /raffles/{id}/buyers`. Schemas `RaffleStatsRead` y `BuyerRead` en `schemas.py`. Funciones `get_raffle_stats()` y `get_raffle_buyers()` en `services/raffles.py`.
+- Issue #13: campo `winner_number` en modelo `Raffle`. Nuevo servicio `services/ganador.py` con `register_winner()`. Endpoint `POST /raffles/{id}/winner`. Vista pública expone `winner_number`. Config `meta_template_winner_notification`.
+- Checkpoint arquitectónico: candidato 4 aplicado — `_reserva_vigente()` como función pura; `get_number_states()`, `get_raffle_detail()`, `get_raffle_stats()` y `reserve_number()` ya no llaman `expire_old_reservations()`.
+
+Decisiones consolidadas:
+- Un módulo por caso de uso nuevo: `services/ganador.py` es el patrón a seguir.
+- Las funciones de lectura no producen efectos de escritura. La expiración lazy se resuelve en memoria.
+- `expire_old_reservations()` es exclusivo del scheduler.
+- Monkeypatches en tests deben apuntar al módulo que importa `send_whatsapp`, no al de `notifications`.
+
+Pendientes exactos:
+- Issue #12 pendiente: job diario de recordatorio de pago (WhatsApp a compradores con rifa en 15 días).
+- Agregar `reminder_sent_at` a `Reservation` y recrear BD antes de tests.
+- Candidatos 1, 2 y 3 del checkpoint arquitectónico aún no aplicados (deuda técnica conocida).
+
+---
+
 ## Handoff - Issues #10 y #11
 
 Fecha: 2026-05-25
