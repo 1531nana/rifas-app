@@ -10,7 +10,7 @@ from sqlmodel import Session, select
 from app.core.config import get_settings
 from app.core.database import engine
 from app.models.domain import PaymentMethod, Raffle, RaffleStatus, Reservation, ReservationStatus
-from app.models.schemas import NumberState, RaffleCreate, RaffleDetailRead, RaffleUpdate, ReservationCreate
+from app.models.schemas import BuyerRead, NumberState, RaffleCreate, RaffleDetailRead, RaffleStatsRead, RaffleUpdate, ReservationCreate
 from app.services.notifications import send_whatsapp
 
 logger = logging.getLogger(__name__)
@@ -278,6 +278,32 @@ def send_payment_confirmation(reservation: Reservation, raffle: Raffle) -> bool:
             "draw_date": raffle.draw_date.isoformat(),
         },
     )
+
+
+def get_raffle_stats(session: Session, raffle: Raffle) -> RaffleStatsRead:
+    expire_old_reservations(session, raffle.id or 0)
+    reservations = session.exec(
+        select(Reservation).where(Reservation.raffle_id == raffle.id)
+    ).all()
+    sold = sum(1 for r in reservations if r.status == ReservationStatus.paid)
+    pending = sum(1 for r in reservations if r.status == ReservationStatus.pending)
+    return RaffleStatsRead(
+        total_numbers=raffle.total_numbers,
+        sold_count=sold,
+        reserved_count=pending,
+        available_count=raffle.total_numbers - sold - pending,
+        paid_total=sold * raffle.ticket_price,
+        pending_payments=pending,
+    )
+
+
+def get_raffle_buyers(session: Session, raffle: Raffle) -> list[BuyerRead]:
+    reservations = session.exec(
+        select(Reservation)
+        .where(Reservation.raffle_id == raffle.id)
+        .order_by(Reservation.created_at.desc())
+    ).all()
+    return [BuyerRead.model_validate(r) for r in reservations]
 
 
 def run_expiration_job() -> None:

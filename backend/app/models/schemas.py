@@ -99,6 +99,28 @@ class RaffleUpdate(BaseModel):
     prize_image_url: str | None = None
 
 
+class RaffleStatsRead(BaseModel):
+    total_numbers: int
+    sold_count: int
+    reserved_count: int
+    available_count: int
+    paid_total: int
+    pending_payments: int
+
+
+class BuyerRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    number: int
+    buyer_name: str
+    buyer_phone: str
+    buyer_email: EmailStr | None
+    payment_method: PaymentMethod
+    status: ReservationStatus
+    paid_at: datetime | None = None
+
+
 class RaffleDetailRead(RaffleRead):
     sold_count: int
     reserved_count: int
