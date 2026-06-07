@@ -98,6 +98,50 @@ Pendientes exactos:
 
 ---
 
+## Handoff - Issue #12
+
+Fecha: 2026-06-06
+
+Alcance cerrado:
+- Issue #12: job diario `send_payment_reminders()` en `services/recordatorio.py`. Busca reservas `status=pending` con `reminder_sent_at IS NULL` cuya rifa sortea en 14–16 días. Envía WhatsApp con template `payment_reminder` y marca `reminder_sent_at`. Scheduler actualizado con job cada 24h.
+- Nuevo campo `reminder_sent_at: Optional[datetime]` en `Reservation` (domain.py).
+- Config `meta_template_payment_reminder = "payment_reminder"` en `core/config.py`.
+- 50 tests pasando. Todas las issues del sprint completadas (#12–#14).
+
+Decisiones consolidadas:
+- `services/recordatorio.py` sigue el mismo patrón que `services/ganador.py`: un módulo por caso de uso, funciones privadas `_`, función pública como punto de entrada único.
+- El job no bloquea el resto si Meta Cloud API falla: loguea advertencia por reserva y continúa con las demás.
+- `reminder_sent_at` se escribe solo si el envío fue exitoso, garantizando idempotencia real.
+
+Pendientes exactos:
+- Candidatos arquitectónicos 1, 2 y 3 del checkpoint no aplicados (deuda técnica documentada).
+- Build del frontend falla por Node.js v16.9.0 (requiere v18+); problema preexistente del entorno, no de los cambios de este sprint.
+- PR de la rama `feature/handoff-issues` pendiente de abrir hacia `develop`.
+
+---
+
+## Handoff - Issues #13, #14 + Checkpoint Arquitectónico
+
+Fecha: 2026-06-06
+
+Alcance cerrado:
+- Issue #14: endpoints `GET /raffles/{id}/stats` y `GET /raffles/{id}/buyers`. Schemas `RaffleStatsRead` y `BuyerRead` en `schemas.py`. Funciones `get_raffle_stats()` y `get_raffle_buyers()` en `services/raffles.py`.
+- Issue #13: campo `winner_number` en modelo `Raffle`. Nuevo servicio `services/ganador.py` con `register_winner()`. Endpoint `POST /raffles/{id}/winner`. Vista pública expone `winner_number`. Config `meta_template_winner_notification`.
+- Checkpoint arquitectónico: candidato 4 aplicado — `_reserva_vigente()` como función pura; `get_number_states()`, `get_raffle_detail()`, `get_raffle_stats()` y `reserve_number()` ya no llaman `expire_old_reservations()`.
+
+Decisiones consolidadas:
+- Un módulo por caso de uso nuevo: `services/ganador.py` es el patrón a seguir.
+- Las funciones de lectura no producen efectos de escritura. La expiración lazy se resuelve en memoria.
+- `expire_old_reservations()` es exclusivo del scheduler.
+- Monkeypatches en tests deben apuntar al módulo que importa `send_whatsapp`, no al de `notifications`.
+
+Pendientes exactos:
+- Issue #12 pendiente: job diario de recordatorio de pago (WhatsApp a compradores con rifa en 15 días).
+- Agregar `reminder_sent_at` a `Reservation` y recrear BD antes de tests.
+- Candidatos 1, 2 y 3 del checkpoint arquitectónico aún no aplicados (deuda técnica conocida).
+
+---
+
 ## Handoff - Issues #10 y #11
 
 Fecha: 2026-05-25

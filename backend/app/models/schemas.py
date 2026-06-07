@@ -37,6 +37,10 @@ class RaffleCreate(BaseModel):
     prize_image_url: str | None = None
 
 
+class RegisterWinnerRequest(BaseModel):
+    number: int = Field(ge=0)
+
+
 class RaffleRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -50,6 +54,7 @@ class RaffleRead(BaseModel):
     prize_image_url: str | None
     public_token: str
     status: RaffleStatus
+    winner_number: int | None = None
 
 
 class NumberState(BaseModel):
@@ -97,6 +102,28 @@ class RaffleUpdate(BaseModel):
     prize_description: str | None = Field(default=None, min_length=5)
     draw_date: datetime | None = None
     prize_image_url: str | None = None
+
+
+class RaffleStatsRead(BaseModel):
+    total_numbers: int
+    sold_count: int
+    reserved_count: int
+    available_count: int
+    paid_total: int
+    pending_payments: int
+
+
+class BuyerRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    number: int
+    buyer_name: str
+    buyer_phone: str
+    buyer_email: EmailStr | None
+    payment_method: PaymentMethod
+    status: ReservationStatus
+    paid_at: datetime | None = None
 
 
 class RaffleDetailRead(RaffleRead):

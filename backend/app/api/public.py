@@ -38,6 +38,7 @@ def build_public_raffle_response(session: Session, raffle: Raffle) -> PublicRaff
         prize_image_url=raffle.prize_image_url,
         public_token=raffle.public_token,
         status=raffle.status,
+        winner_number=raffle.winner_number,
         numbers=get_number_states(session, raffle),
     )
 
