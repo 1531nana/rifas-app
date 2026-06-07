@@ -61,4 +61,5 @@ class Reservation(SQLModel, table=True):
     status: ReservationStatus = Field(default=ReservationStatus.pending, index=True)
     expires_at: datetime
     paid_at: Optional[datetime] = None
+    reminder_sent_at: Optional[datetime] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)

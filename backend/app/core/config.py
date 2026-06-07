@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     meta_language_code: str = "es_CO"
     meta_template_payment_confirmation: str = "payment_confirmation"
     meta_template_winner_notification: str = "winner_notification"
+    meta_template_payment_reminder: str = "payment_reminder"
 
     @property
     def allowed_origins(self) -> list[str]:
