@@ -98,6 +98,28 @@ Pendientes exactos:
 
 ---
 
+## Handoff - Issue #12
+
+Fecha: 2026-06-06
+
+Alcance cerrado:
+- Issue #12: job diario `send_payment_reminders()` en `services/recordatorio.py`. Busca reservas `status=pending` con `reminder_sent_at IS NULL` cuya rifa sortea en 14–16 días. Envía WhatsApp con template `payment_reminder` y marca `reminder_sent_at`. Scheduler actualizado con job cada 24h.
+- Nuevo campo `reminder_sent_at: Optional[datetime]` en `Reservation` (domain.py).
+- Config `meta_template_payment_reminder = "payment_reminder"` en `core/config.py`.
+- 50 tests pasando. Todas las issues del sprint completadas (#12–#14).
+
+Decisiones consolidadas:
+- `services/recordatorio.py` sigue el mismo patrón que `services/ganador.py`: un módulo por caso de uso, funciones privadas `_`, función pública como punto de entrada único.
+- El job no bloquea el resto si Meta Cloud API falla: loguea advertencia por reserva y continúa con las demás.
+- `reminder_sent_at` se escribe solo si el envío fue exitoso, garantizando idempotencia real.
+
+Pendientes exactos:
+- Candidatos arquitectónicos 1, 2 y 3 del checkpoint no aplicados (deuda técnica documentada).
+- Build del frontend falla por Node.js v16.9.0 (requiere v18+); problema preexistente del entorno, no de los cambios de este sprint.
+- PR de la rama `feature/handoff-issues` pendiente de abrir hacia `develop`.
+
+---
+
 ## Handoff - Issues #13, #14 + Checkpoint Arquitectónico
 
 Fecha: 2026-06-06
