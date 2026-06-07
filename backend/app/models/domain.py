@@ -46,6 +46,7 @@ class Raffle(SQLModel, table=True):
     prize_image_url: Optional[str] = None
     public_token: str = Field(index=True, unique=True)
     status: RaffleStatus = Field(default=RaffleStatus.active)
+    winner_number: Optional[int] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 

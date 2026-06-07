@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     meta_graph_version: str = "v20.0"
     meta_language_code: str = "es_CO"
     meta_template_payment_confirmation: str = "payment_confirmation"
+    meta_template_winner_notification: str = "winner_notification"
 
     @property
     def allowed_origins(self) -> list[str]:

@@ -37,6 +37,10 @@ class RaffleCreate(BaseModel):
     prize_image_url: str | None = None
 
 
+class RegisterWinnerRequest(BaseModel):
+    number: int = Field(ge=0)
+
+
 class RaffleRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -50,6 +54,7 @@ class RaffleRead(BaseModel):
     prize_image_url: str | None
     public_token: str
     status: RaffleStatus
+    winner_number: int | None = None
 
 
 class NumberState(BaseModel):

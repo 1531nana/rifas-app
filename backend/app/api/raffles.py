@@ -4,7 +4,8 @@ from sqlmodel import Session, select
 from app.api.deps import get_current_admin
 from app.core.database import get_session
 from app.models.domain import Admin, Raffle, Reservation
-from app.models.schemas import BuyerRead, RaffleCreate, RaffleDetailRead, RaffleRead, RaffleStatsRead, RaffleUpdate, ReservationRead
+from app.models.schemas import BuyerRead, RaffleCreate, RaffleDetailRead, RaffleRead, RaffleStatsRead, RaffleUpdate, RegisterWinnerRequest, ReservationRead
+from app.services.ganador import register_winner
 from app.services.raffles import (
     confirm_cash_payment,
     create_raffle,
@@ -75,6 +76,17 @@ def get_raffle_buyers_endpoint(
 ) -> list[BuyerRead]:
     raffle = get_owned_raffle(session, current_admin.id or 0, raffle_id)
     return get_raffle_buyers(session, raffle)
+
+
+@router.post("/{raffle_id}/winner", response_model=RaffleRead)
+def register_winner_endpoint(
+    raffle_id: int,
+    payload: RegisterWinnerRequest,
+    current_admin: Admin = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+) -> Raffle:
+    raffle = get_owned_raffle(session, current_admin.id or 0, raffle_id)
+    return register_winner(session, raffle, payload)
 
 
 @router.post("/{raffle_id}/image", response_model=RaffleRead)
