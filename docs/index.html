@@ -1,0 +1,1505 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rifas App | Software Journey</title>
+  <link rel="stylesheet" href="software-journey.css">
+  <style>
+    .nav-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--blue);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      margin-right: 5px;
+      vertical-align: middle;
+    }
+    .nav-sep {
+      color: var(--line);
+      margin: 0 4px;
+      font-weight: 300;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#hero">Rifas App</a>
+    <nav aria-label="Secciones del Software Journey">
+      <a href="#teoria">Marco teórico</a>
+      <span class="nav-sep">|</span>
+      <a href="#tracer"><span class="nav-badge">1</span>Tracer Bullet</a>
+      <span class="nav-sep">|</span>
+      <a href="#modulos"><span class="nav-badge">2</span>Anatomía</a>
+      <span class="nav-sep">|</span>
+      <a href="#retrospectiva"><span class="nav-badge">3</span>Veredicto</a>
+      <span class="nav-sep">|</span>
+      <a href="#entrega">Entrega</a>
+      <span class="nav-sep">|</span>
+      <a href="#evidencias">Evidencias</a>
+    </nav>
+  </header>
+
+  <main id="inicio">
+
+    <!-- HERO -->
+    <section class="hero section-band">
+      <div class="section-body hero-layout">
+        <div class="hero-copy">
+          <p class="eyebrow">Tarea 3 — Software Journey y auditoría arquitectónica</p>
+          <h1>Rifas App: bitácora crítica de co-creación hombre-máquina</h1>
+          <p class="lead">
+            Este sitio consolida la historia técnica del proyecto, evalúa sus
+            decisiones con el vocabulario de John Ousterhout y deja evidencia
+            navegable del cierre entre PRD, issues, agentes, código y pruebas.
+          </p>
+          <div class="hero-facts" aria-label="Resumen de entrega">
+            <span>Rama auditada: develop</span>
+            <span>Base estable: main</span>
+            <span>Tests: 50 pasando</span>
+            <span>Issues cerrados: #1–#14</span>
+          </div>
+        </div>
+
+        <div class="journey-map" aria-label="Mapa visual del viaje de software">
+          <div class="map-node map-start">
+            <span>Brief</span>
+            <strong>Problema</strong>
+          </div>
+          <div class="map-node">
+            <span>grill-me</span>
+            <strong>Árbol de diseño</strong>
+          </div>
+          <div class="map-node map-risk">
+            <span>Tracer Bullet</span>
+            <strong>Reserva + pago</strong>
+          </div>
+          <div class="map-node">
+            <span>Ralph / TDD</span>
+            <strong>Issues #1–#14</strong>
+          </div>
+          <div class="map-node map-end">
+            <span>Checkpoint</span>
+            <strong>Auditoría</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MARCO TEÓRICO -->
+    <section id="teoria" class="section-band theory-band">
+      <div class="section-body">
+        <div class="section-heading">
+          <p class="eyebrow">Marco teórico obligatorio</p>
+          <h2>Lectura del código desde A Philosophy of Software Design</h2>
+          <p>
+            La evaluación usa la terminología exacta de John Ousterhout.
+            Los conceptos de Complexity, Deep Modules, Shallow Modules,
+            Information Hiding, Information Leakage y Change Amplification
+            son el lenguaje común de las secciones 2 y 3.
+          </p>
+        </div>
+
+        <div class="concept-grid">
+          <article>
+            <h3>Deep Modules</h3>
+            <p>
+              Según Ousterhout, un módulo profundo tiene una interfaz
+              pequeña y simple que oculta una implementación grande y
+              compleja. La "profundidad" se mide por el ratio entre la
+              funcionalidad que ofrece y el costo cognitivo de su
+              interfaz. El mejor diseño concentra complejidad interna y
+              expone solo lo esencial: una firma, un retorno, sin
+              detalles de implementación visibles desde afuera.
+            </p>
+          </article>
+          <article>
+            <h3>Shallow Modules</h3>
+            <p>
+              Un módulo superficial tiene una interfaz casi tan grande
+              como su implementación. Agregar una capa no reduce la
+              complejidad; la traslada. Ousterhout los llama el
+              "pecado clásico" del diseño moderno: clases con un solo
+              método trivial, archivos que solo re-exportan otro archivo,
+              adaptadores que no adaptan nada. Aumentan la carga cognitiva
+              sin ocultar información útil.
+            </p>
+          </article>
+          <article>
+            <h3>Information Hiding</h3>
+            <p>
+              El principio fundamental de Ousterhout: cada módulo debe
+              esconder decisiones de diseño que otros módulos no
+              necesitan conocer. Cuando ese ocultamiento funciona, un
+              cambio interno no obliga a modificar ninguna capa superior.
+              Los mejores módulos ocultan algoritmos, estructuras de
+              datos, protocolos externos, reglas de negocio y detalles
+              de persistencia detrás de una interfaz estable.
+            </p>
+          </article>
+          <article>
+            <h3>Information Leakage</h3>
+            <p>
+              Ocurre cuando un detalle de implementación de un módulo
+              se filtra a otro, creando una dependencia implícita. El
+              síntoma clásico: un cambio interno en el backend obliga a
+              cambiar el frontend aunque la interfaz pública no cambie.
+              Ousterhout identifica dos formas: fuga obvia (exportar
+              tipos internos) y fuga temporal (que dos módulos conozcan
+              el mismo protocolo externo).
+            </p>
+          </article>
+          <article>
+            <h3>Change Amplification</h3>
+            <p>
+              Un cambio lógico simple que obliga a modificar muchos
+              archivos en cascada. Ousterhout lo usa como métrica de mal
+              diseño: si agregar un nuevo método de pago requiere editar
+              el servicio, el router, el schema, el componente React y
+              el modal, hay Change Amplification. La causa habitual es
+              que información que debería estar oculta está repartida
+              por el sistema.
+            </p>
+          </article>
+          <article>
+            <h3>Bala Trazadora</h3>
+            <p>
+              Analogía de desarrollo incremental: disparar una bala
+              trazadora significa implementar el tramo más incierto del
+              sistema de extremo a extremo, antes de construir el resto.
+              El objetivo no es entregar funcionalidad completa sino
+              obtener retroalimentación real de la arquitectura mientras
+              el costo de cambio aún es bajo. Si la bala llega al blanco,
+              la arquitectura es viable; si no, se corrige a tiempo.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN 1: TRACER BULLET -->
+    <section id="tracer" class="section-band">
+      <div class="section-body">
+        <p class="eyebrow">Sección 1</p>
+        <h2>La Bala Trazadora y el enrutamiento de las skills</h2>
+        <p>
+          El proyecto usó un conjunto de skills de Claude Code en un orden
+          deliberado para reducir el riesgo técnico progresivamente:
+        </p>
+        <div class="timeline" aria-label="Enrutamiento de skills">
+          <article>
+            <span>1</span>
+            <h3>/grill-me</h3>
+            <p>Interrogatorio sin piedad sobre el diseño. Cerró el árbol de decisiones antes de escribir código.</p>
+          </article>
+          <article>
+            <span>2</span>
+            <h3>/write-a-prd + /prd-to-issues</h3>
+            <p>El brief del cliente se convirtió en PRD y luego en 14 issues trabajables en <code>issues/</code>.</p>
+          </article>
+          <article>
+            <span>3</span>
+            <h3>Ralph + /tdd</h3>
+            <p>El agente autónomo <code>ralph/once.ps1</code> leyó los issues abiertos, ejecutó el ciclo rojo-verde-refactor y cerró cada issue con tests pasando.</p>
+          </article>
+          <article>
+            <span>4</span>
+            <h3>/improve-codebase-architecture</h3>
+            <p>Checkpoint arquitectónico al cierre de #11. Tres sub-agentes en paralelo propusieron interfaces; se aplicó el Candidato 4.</p>
+          </article>
+          <article>
+            <span>5</span>
+            <h3>/handoff</h3>
+            <p>Al final de cada sesión, la skill compactó el contexto en <code>handoffs.md</code> para que el siguiente agente pudiera retomar sin pérdida de información.</p>
+          </article>
+        </div>
+      </div>
+
+      <div class="section-body two-column">
+        <div>
+          <h3>Suposiciones iniciales del equipo</h3>
+          <p>
+            Al inicio del proyecto, el equipo asumió que el mayor desafío
+            radicaba en diseñar una interfaz de usuario atractiva y un flujo
+            CRUD convencional para que los administradores crearan eventos.
+            Pensábamos que el sistema se comportaría como un catálogo estático
+            de comercio electrónico tradicional, donde los usuarios simplemente
+            seleccionaban productos (boletas) y pagaban.
+          </p>
+          <p>
+            No habíamos dimensionado el impacto de la concurrencia ni la
+            necesidad de proteger la privacidad de los enlaces organizadores
+            en un entorno multi-inquilino (<em>multi-tenant</em>).
+          </p>
+        </div>
+
+        <div>
+          <h3>Uso de la skill grill-me</h3>
+          <p>
+            El uso de la skill <code>grill-me</code> transformó por completo
+            nuestra perspectiva del problema. Al someter nuestras suposiciones
+            a un cuestionamiento estricto, la herramienta nos obligó a
+            profundizar en las reglas de negocio críticas:
+          </p>
+          <ul>
+            <li>El manejo de estados de los números: disponible, reservado, pagado.</li>
+            <li>El tiempo límite de expiración de las reservas para evitar el acaparamiento de boletas.</li>
+            <li>La mitigación de condiciones de carrera (<em>race conditions</em>) cuando dos usuarios intentan comprar el mismo número al mismo tiempo.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="section-body">
+        <h3>Árbol de diseño resultante</h3>
+        <p>
+          El árbol de diseño actuó como mapa conceptual estratégico para
+          refinar las ideas iniciales. Permitió estructurar de forma jerárquica
+          las decisiones de arquitectura, dividiendo el sistema en módulos
+          aislados e independientes.
+        </p>
+        <div class="timeline" aria-label="Ramas del árbol de diseño">
+          <article>
+            <span>A</span>
+            <h3>Lógica transaccional en el backend</h3>
+            <p>La lógica de reserva debía vivir en el backend mediante servicios encapsulados profundos, dejando al frontend únicamente la responsabilidad de renderizar de manera reactiva el estado de la grilla.</p>
+          </article>
+          <article>
+            <span>B</span>
+            <h3>Estados calculados en el servicio</h3>
+            <p>El número puede ser <code>available</code>, <code>reserved</code> o <code>sold</code>. La lógica de vigencia de reserva vive en el servicio, no en React. El frontend solo colorea.</p>
+          </article>
+          <article>
+            <span>C</span>
+            <h3>Dos flujos de pago con expiración diferenciada</h3>
+            <p>Digital vía Wompi (48h) con webhook y confirmación automática. Efectivo (5 días) con confirmación manual del admin. Regla de negocio encapsulada en el servicio.</p>
+          </article>
+          <article>
+            <span>D</span>
+            <h3>Token opaco por rifa</h3>
+            <p>El comprador accede vía <code>/r/{public_token}</code> sin cuenta de usuario. El <code>public_token</code> es el único identificador público; las llaves primarias nunca se exponen.</p>
+          </article>
+        </div>
+      </div>
+
+      <div class="section-body two-column">
+        <div>
+          <h3>Riesgo técnico principal</h3>
+          <p>
+            Identificamos que el riesgo técnico más incierto y crítico del
+            sistema era la <strong>integración transaccional segura entre la
+            selección de números en tiempo real y la persistencia en la base
+            de datos</strong>.
+          </p>
+          <p>
+            Si la lógica de reserva fallaba o era lenta, dos compradores podían
+            pagar por el mismo número, destruyendo la confianza en la plataforma.
+            Validar que FastAPI procesara de manera óptima las solicitudes
+            concurrentes y manejara correctamente las expiraciones
+            <em>lazy</em> de boletas era la máxima prioridad arquitectónica.
+          </p>
+        </div>
+
+        <div class="evidence-panel">
+          <h3>Issue elegido como Bala Trazadora</h3>
+          <p>
+            Para mitigar este riesgo de inmediato, atacamos como Bala Trazadora
+            el <strong>Módulo de Reserva y Bloqueo Temporal de Números</strong>.
+            No nos enfocamos en pantallas bonitas ni flujos complejos de
+            administración; en su lugar, programamos un disparo de punta
+            a punta:
+          </p>
+          <ul>
+            <li>Una ruta REST funcional que recibiera un número de boleta.</li>
+            <li>Aplicara el bloqueo en la base de datos por un tiempo límite.</li>
+            <li>Retornara el token de confirmación al frontend.</li>
+          </ul>
+          <p>
+            Archivos de test: <code>test_006_reserva_numeros.py</code>,
+            <code>test_007_pago_wompi.py</code>, <code>test_008_pago_efectivo.py</code>.
+          </p>
+        </div>
+      </div>
+
+      <div class="section-body">
+        <h3>Cómo se dirigió a Ralph a atacar primero la Bala Trazadora</h3>
+        <div class="two-column">
+          <div>
+            <p>
+              Ralph es el agente autónomo del proyecto: lee los issues abiertos
+              en <code>issues/</code>, ejecuta <code>claude --permission-mode acceptEdits</code>
+              y cierra el issue con tests pasando. Por defecto, Ralph tomaría el
+              primer issue disponible en orden de nombre de archivo.
+            </p>
+            <p>
+              Para dirigirlo a la Bala Trazadora primero, el equipo mantuvo sin
+              abrir los issues de funcionalidades secundarias (#10–#14) hasta que
+              el tramo de reserva y pago estuviera verde. El mecanismo fue simple:
+              el orden de los archivos en <code>issues/</code> dicta la prioridad de Ralph.
+            </p>
+            <p>
+              Esta decisión forzó a validar la integración más incierta
+              (reserva concurrente + Wompi + efectivo) antes de construir
+              imagen de premio, recordatorios o estadísticas sobre una base
+              que aún podía fallar.
+            </p>
+          </div>
+          <div class="evidence-panel">
+            <h3>Evidencias de commits y PR</h3>
+            <ul>
+              <li><strong>Bala Trazadora implementada:</strong> issues #6–#8 con tests <code>test_006_reserva_numeros.py</code>, <code>test_007_pago_wompi.py</code>, <code>test_008_pago_efectivo.py</code></li>
+              <li><strong>Handoffs del sprint:</strong> <code>handoffs.md</code> — sección "Issues #6, #7 y #8" (fecha 2026-05-24)</li>
+              <li><strong>Rama principal:</strong> <code>develop</code> — historial de commits desde scaffold (#1) hasta cierre de sprint (#14)</li>
+              <li><strong>Checkpoint arquitectónico:</strong> archivo <code>architecture-checkpoint.md</code> en la raíz del repositorio</li>
+            </ul>
+            <p style="margin-top:1rem;">
+              <strong>Qué cambió después de la validación:</strong> los issues
+              #9–#14 se construyeron sobre una máquina de estados, schemas y
+              flujo de pago ya probados. Ninguno obligó a reescribir la lógica
+              central de reserva o pago.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-body two-column">
+        <div>
+          <h3>Retroalimentación temprana obtenida</h3>
+          <p>
+            Al priorizar este issue como Bala Trazadora, el equipo obtuvo
+            dos aprendizajes invaluables de forma temprana:
+          </p>
+          <ol>
+            <li>
+              <strong>Esquemas de salida estrictos (Information Hiding):</strong>
+              descubrimos la necesidad de implementar schemas Pydantic estrictos
+              (<code>RifaResponse</code>, <code>ReservationRead</code>) para
+              ocultar las llaves primarias de la infraestructura base. Esto
+              dio origen a la estrategia de Information Hiding del proyecto:
+              los DTOs de salida nunca exponen IDs internos ni detalles de tablas.
+            </li>
+            <li>
+              <strong>Estructura de directorios para pytest:</strong>
+              aprendimos a estructurar correctamente el árbol del backend
+              para que las herramientas de prueba pudieran validar el ciclo
+              de vida de una reserva de forma aislada, un archivo por issue,
+              sin dependencias cruzadas entre tests.
+            </li>
+          </ol>
+        </div>
+        <div>
+          <h3>Conclusión de la sección</h3>
+          <p>
+            La validación temprana a través de la Bala Trazadora demostró
+            que la arquitectura base elegida (FastAPI + SQLModel) era
+            perfectamente viable y elástica para soportar las reglas de
+            negocio del cliente.
+          </p>
+          <p>
+            Al resolver el núcleo más difícil y riesgoso al principio del
+            ciclo de desarrollo, pudimos construir los módulos restantes
+            (CRUD de rifas, vistas de administración, notificaciones,
+            recordatorios y estadísticas) sobre una base técnica sólida,
+            estable y previamente testeada.
+          </p>
+          <p>
+            Ninguno de los issues tardíos (#9–#14) obligó a reescribir la
+            lógica central de reserva o pago. La arquitectura aguantó el peso
+            de las funcionalidades adicionales sin colapsar.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN 2: ANATOMÍA DE LA COMPLEJIDAD -->
+    <section id="modulos" class="section-band module-band">
+      <div class="section-body">
+        <div class="section-heading">
+          <p class="eyebrow">Sección 2</p>
+          <h2>Anatomía de la complejidad</h2>
+          <p>
+            Ousterhout dice que la pregunta correcta no es si un archivo es
+            largo o corto, sino si su interfaz compra una reducción real de
+            complejidad para el resto del sistema. A continuación, la auditoría
+            módulo por módulo.
+          </p>
+        </div>
+      </div>
+
+      <!-- Módulos profundos -->
+      <div class="section-body">
+        <h3>Módulos profundos identificados</h3>
+        <div class="module-table" role="table" aria-label="Módulos profundos">
+          <div class="table-row table-head" role="row">
+            <div role="columnheader">Módulo</div>
+            <div role="columnheader">Complejidad oculta</div>
+            <div role="columnheader">Interfaz pública</div>
+            <div role="columnheader">Veredicto</div>
+          </div>
+          <div class="table-row" role="row">
+            <div role="cell"><code>services/raffles.py</code><br><code>reserve_number()</code></div>
+            <div role="cell">Valida estado de rifa, rango de número, conflictos de reserva vigente, calcula expiración según método de pago, persiste en BD</div>
+            <div role="cell"><code>reserve_number(session, raffle, payload)</code></div>
+            <div role="cell"><strong>Deep Module</strong></div>
+          </div>
+          <div class="table-row" role="row">
+            <div role="cell"><code>frontend/src/lib/api.js</code><br><code>request()</code></div>
+            <div role="cell">Inyecta JWT, detecta 401, renueva token, reintenta request original, parsea errores de FastAPI, deduplica refreshes concurrentes</div>
+            <div role="cell"><code>await request("/r/{token}")</code></div>
+            <div role="cell"><strong>Deep Module</strong></div>
+          </div>
+          <div class="table-row" role="row">
+            <div role="cell"><code>services/wompi.py</code><br><code>validar_firma_webhook()</code></div>
+            <div role="cell">Extrae properties del payload, recorre paths anidados dinámicamente, concatena timestamp y clave, calcula SHA-256, maneja payloads malformados</div>
+            <div role="cell"><code>validar_firma_webhook(payload, key) &rarr; bool</code></div>
+            <div role="cell"><strong>Deep Module</strong></div>
+          </div>
+          <div class="table-row" role="row">
+            <div role="cell"><code>services/notifications.py</code><br><code>send_whatsapp()</code></div>
+            <div role="cell">Detecta modo sandbox, construye payload Meta Cloud API, hace llamada HTTP, maneja errores sin propagar excepciones, retorna bool de éxito</div>
+            <div role="cell"><code>send_whatsapp(phone, template, params)</code></div>
+            <div role="cell"><strong>Deep Module</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-body two-column">
+        <div class="code-card">
+          <h3>reserve_number() — interfaz mínima, implementación profunda</h3>
+          <pre><code>def reserve_number(session: Session, raffle: Raffle,
+                   payload: ReservationCreate) -&gt; Reservation:
+    if raffle.status != RaffleStatus.active:
+        raise HTTPException(...)            # 1. Valida estado
+
+    if payload.number &gt;= raffle.total_numbers:
+        raise HTTPException(...)            # 2. Valida rango
+
+    ahora = datetime.utcnow()
+    candidatas = session.exec(
+        select(Reservation).where(
+            Reservation.raffle_id == raffle.id,
+            Reservation.number == payload.number,
+            Reservation.status.in_([...]),
+        )
+    ).all()
+    if any(_reserva_vigente(r, ahora) for r in candidatas):
+        raise HTTPException(status_code=409) # 3. Detecta conflicto
+
+    timeout = timedelta(days=5) if payload.payment_method \
+              == PaymentMethod.cash else timedelta(hours=48)
+                                            # 4. Calcula expiración
+
+    reservation = Reservation(...)          # 5. Crea y persiste
+    session.add(reservation)
+    session.commit()
+    session.refresh(reservation)
+    return reservation</code></pre>
+          <p>El endpoint que la llama solo necesita:<br>
+          <code>return reserve_number(session, raffle, payload)</code></p>
+        </div>
+
+        <div class="code-card">
+          <h3>request() — ciclo completo de autenticación oculto</h3>
+          <pre><code>export async function request(path, options = {}) {
+  const token = localStorage.getItem("rifas_token");
+  const response = await fetch(`${API_URL}${path}`, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+      ...options.headers,
+    },
+  });
+
+  // Detecta 401 y renueva token automáticamente
+  if (response.status === 401
+      &amp;&amp; localStorage.getItem("rifas_refresh")) {
+    const newToken = await attemptRefresh();
+    if (newToken) {
+      const retry = await fetch(...);
+      const data = await retry.json().catch(() =&gt; null);
+      if (!retry.ok) throw parsearMensajeError(data?.detail);
+      return data;
+    }
+  }
+
+  const data = await response.json().catch(() =&gt; null);
+  if (!response.ok) throw new Error(parsearMensajeError(data?.detail));
+  return data;
+}
+// Ningún componente React toca localStorage directamente</code></pre>
+        </div>
+      </div>
+
+      <div class="section-body two-column">
+        <div class="code-card">
+          <h3>validar_firma_webhook() — SHA-256 con paths dinámicos</h3>
+          <pre><code>def validar_firma_webhook(payload: dict, events_key: str) -&gt; bool:
+    try:
+        signature = payload["signature"]
+        properties = signature["properties"]
+        checksum   = signature["checksum"]
+        timestamp  = payload["timestamp"]
+
+        concatenated = ""
+        data = payload["data"]
+        for prop in properties:
+            value = data
+            for key in prop.split("."):   # paths anidados: "a.b.c"
+                value = value[key]
+            concatenated += str(value)
+
+        concatenated += str(timestamp)
+        concatenated += events_key
+
+        computed = hashlib.sha256(
+            concatenated.encode()
+        ).hexdigest()
+        return computed == checksum
+    except (KeyError, TypeError):
+        return False   # payload malformado = falla silenciosa</code></pre>
+        </div>
+
+        <div class="code-card">
+          <h3>send_whatsapp() — sandbox transparente</h3>
+          <pre><code># services/notifications.py
+def send_whatsapp(phone: str, template: str,
+                  params: list | None = None) -&gt; bool:
+    # Modo sandbox: loguea sin llamadas externas
+    if (settings.meta_sandbox
+            or not settings.meta_api_token
+            or not settings.meta_phone_number_id):
+        logger.info("[SANDBOX] WhatsApp to %s template=%s",
+                    phone, template)
+        return True
+
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": phone,
+        "type": "template",
+        "template": {
+            "name": template,
+            "components": _build_components(params),
+        },
+    }
+    try:
+        resp = httpx.post(META_URL, json=payload, ...)
+        resp.raise_for_status()
+        return True
+    except Exception as exc:
+        logger.warning("WhatsApp failed: %s", exc)
+        return False   # nunca bloquea el flujo principal</code></pre>
+        </div>
+      </div>
+
+      <!-- Módulos superficiales -->
+      <div class="section-body">
+        <h3>Módulos superficiales identificados</h3>
+        <div class="module-table" role="table" aria-label="Módulos superficiales">
+          <div class="table-row table-head" role="row">
+            <div role="columnheader">Módulo</div>
+            <div role="columnheader">Por qué era superficial</div>
+            <div role="columnheader">Problema de mantenimiento</div>
+            <div role="columnheader">Estado</div>
+          </div>
+          <div class="table-row" role="row">
+            <div role="cell"><code>services/pagos.py</code></div>
+            <div role="cell">
+              Dos funciones de 10 líneas cada una. Cada una hace
+              exactamente una consulta SQL y un cambio de estado.
+              Lógica casi idéntica a <code>confirm_cash_payment()</code>
+              en <code>services/raffles.py</code>.
+            </div>
+            <div role="cell">
+              Si se agrega un evento de auditoría en la transición de
+              estado de <code>Reservation</code>, hay que actualizar
+              dos archivos distintos que manejan la misma entidad.
+            </div>
+            <div role="cell"><strong>Pendiente de consolidar</strong></div>
+          </div>
+          <div class="table-row" role="row">
+            <div role="cell"><code>models/validators.py</code></div>
+            <div role="cell">
+              10 líneas con un regex y una función de validación.
+              Interfaz = implementación. No oculta nada que no sea obvio
+              leer en el sitio de uso.
+            </div>
+            <div role="cell">
+              Requiere un import adicional en <code>schemas.py</code>
+              para una operación que podría estar inline. Fue creado
+              prematuramente anticipando validadores que nunca llegaron.
+            </div>
+            <div role="cell"><strong>Mantenido; debe crecer o fusionarse</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-body two-column">
+        <div class="code-card">
+          <h3>pagos.py — capa sin profundidad</h3>
+          <pre><code># services/pagos.py — confirmar_pago(), ~10 líneas
+def confirmar_pago(session: Session,
+                   reservation_id: int) -&gt; None:
+    reservation = session.exec(
+        select(Reservation).where(
+            Reservation.id == reservation_id
+        )
+    ).first()
+    if reservation is None \
+       or reservation.status != ReservationStatus.pending:
+        return
+    reservation.status = ReservationStatus.paid
+    reservation.paid_at = datetime.utcnow()
+    session.add(reservation)
+    session.commit()
+# Esta lógica ya existe en raffles.py::confirm_cash_payment()
+# Razón para fusionar: un módulo por dominio, no por punto de entrada</code></pre>
+        </div>
+        <div class="code-card">
+          <h3>validators.py — interfaz = implementación</h3>
+          <pre><code># models/validators.py — archivo completo
+import re
+
+PHONE_RE = re.compile(r"^\+\d[\d\s\-]{6,29}$")
+
+def validate_phone(value: str) -&gt; str:
+    if not PHONE_RE.match(value):
+        raise ValueError(
+            "El celular debe estar en formato "
+            "internacional (ej: +573001112233)"
+        )
+    return value
+
+# Directriz humana (CLAUDE.md): los archivos de validators
+# deben crecer con más validaciones de dominio o fusionarse
+# en el schema donde se usan. Un archivo con una sola función
+# trivial es un módulo superficial por definición.</code></pre>
+        </div>
+      </div>
+
+      <!-- Directrices humanas -->
+      <div class="section-body">
+        <h3>Directrices humanas que mejoraron la profundidad de los módulos</h3>
+        <div class="leakage-grid">
+          <article>
+            <h3>1. Función pura _reserva_vigente()</h3>
+            <p>
+              La IA replicaba la lógica de vigencia de reserva en cuatro
+              funciones distintas. La directriz humana fue extraerla
+              a una función privada pura sin acceso a BD y llamarla desde
+              todos los sitios.
+            </p>
+            <pre><code>def _reserva_vigente(reservation: Reservation,
+                     ahora: datetime) -&gt; bool:
+    if reservation.status == ReservationStatus.paid:
+        return True
+    if reservation.status == ReservationStatus.pending:
+        return reservation.expires_at &gt; ahora
+    return False</code></pre>
+          </article>
+          <article>
+            <h3>2. Un componente por archivo en el frontend</h3>
+            <p>
+              La IA generó <code>ReservaModal</code> dentro de
+              <code>PublicRaffle.jsx</code>. La directriz de
+              <code>CLAUDE.md</code>: "Un componente por archivo.
+              No definir componentes auxiliares dentro del mismo archivo
+              de una página." El modal fue separado a su propio archivo,
+              permitiendo que el estado de UI viva en el componente
+              padre que lo necesita.
+            </p>
+          </article>
+          <article>
+            <h3>3. Constantes compartidas en lib/constants.js</h3>
+            <p>
+              Los textos de aviso de pago y labels de botón fueron
+              definidos inline en <code>ReservaModal.jsx</code>.
+              La directriz los movió a <code>lib/constants.js</code>
+              para evitar duplicación cuando <code>AdminDashboard.jsx</code>
+              necesitara los mismos valores.
+            </p>
+            <pre><code>// lib/constants.js — extraído por directriz humana
+export const AVISO_PAGO = {
+  cash: "Contacta al organizador. Tienes 5 días.",
+  card: "Serás redirigido a Wompi con tarjeta.",
+  pse:  "Serás redirigido a Wompi por PSE.",
+};</code></pre>
+          </article>
+          <article>
+            <h3>4. Separación wompi / pagos / webhooks</h3>
+            <p>
+              La lógica criptográfica de Wompi fue separada de la lógica
+              de negocio de pagos. <code>services/wompi.py</code> maneja
+              solo el protocolo Wompi (firmas, URLs, referencias);
+              <code>api/webhooks.py</code> orquesta sin mezclar
+              responsabilidades.
+            </p>
+          </article>
+          <article>
+            <h3>5. Principio S aplicado a nuevos servicios</h3>
+            <p>
+              Cuando la IA iba a agregar <code>register_winner()</code>
+              directamente en <code>services/raffles.py</code>, la directriz
+              humana fue: "Crea esos servicios en un nuevo archivo, mantén
+              el principio S." Resultado: <code>services/ganador.py</code>
+              y <code>services/recordatorio.py</code>, un módulo por caso
+              de uso.
+            </p>
+          </article>
+        </div>
+      </div>
+
+      <!-- Fugas de información -->
+      <div class="section-body">
+        <h3>Fugas de información detectadas</h3>
+        <div class="leakage-grid">
+          <article>
+            <h3>Fuga 1: regla de 5 días hardcodeada en el frontend</h3>
+            <p>
+              <strong>Dónde:</strong> <code>PublicRaffle.jsx</code>, línea 45.<br>
+              <code>setNotice("Tienes 5 días para completar el pago en efectivo.");</code>
+            </p>
+            <p>
+              <strong>Detalle filtrado:</strong> la regla de negocio "reservas
+              en efectivo expiran en 5 días" está en <code>services/raffles.py</code>:
+              <code>timeout = timedelta(days=5)</code>. El frontend duplicó
+              el valor con texto hardcodeado.
+            </p>
+            <p>
+              <strong>Corrección:</strong> el backend ya devuelve <code>expires_at</code>
+              en <code>ReservationRead</code>. El frontend debe calcular la
+              diferencia de fechas dinámicamente, sin hardcodear el plazo.
+            </p>
+          </article>
+          <article>
+            <h3>Fuga 2: el frontend conoce qué métodos de pago redirigen a Wompi</h3>
+            <p>
+              <strong>Dónde:</strong> <code>ReservaModal.jsx</code>, línea 16.<br>
+              <code>if (reserva &amp;&amp; buyer.payment_method !== "cash") &#123; ... &#125;</code>
+            </p>
+            <p>
+              <strong>Detalle filtrado:</strong> la decisión de que <code>card</code>
+              y <code>pse</code> redirigen a Wompi es lógica de negocio del backend.
+              El frontend la replica verificando <code>payment_method !== "cash"</code>.
+            </p>
+            <p>
+              <strong>Corrección:</strong> el endpoint de checkout debería devolver
+              <code>checkout_url: null</code> para efectivo. El frontend solo
+              verificaría si <code>checkout_url</code> existe, sin conocer qué
+              métodos son online.
+            </p>
+          </article>
+          <article>
+            <h3>Fuga 3: HTTPException en la capa de servicios</h3>
+            <p>
+              <strong>Dónde:</strong> <code>services/raffles.py</code>,
+              <code>services/ganador.py</code>, <code>services/wompi.py</code>.
+            </p>
+            <p>
+              <strong>Detalle filtrado:</strong> <code>HTTPException</code> es
+              una abstracción del protocolo HTTP (FastAPI). Usarla en servicios
+              acopla la capa de negocio al transporte. Si el mismo servicio
+              se invoca desde un job del scheduler o una CLI, los
+              <code>HTTPException</code> fallan de forma incoherente.
+            </p>
+            <p>
+              <strong>Corrección:</strong> los servicios deberían lanzar
+              excepciones de dominio propias (<code>ReservaConflictoError</code>,
+              <code>RifaCerradaError</code>) y la capa <code>api/</code>
+              las capturaría y convertiría en <code>HTTPException</code>.
+            </p>
+          </article>
+        </div>
+      </div>
+
+      <!-- Information Hiding aplicado -->
+      <div class="section-body">
+        <h3>Casos donde Information Hiding funcionó correctamente</h3>
+        <div class="module-table" role="table" aria-label="Information Hiding aplicado">
+          <div class="table-row table-head" role="row">
+            <div role="columnheader">Módulo</div>
+            <div role="columnheader">Detalle oculto</div>
+            <div role="columnheader">Capa que lo encapsula</div>
+          </div>
+          <div class="table-row" role="row">
+            <div role="cell"><code>lib/api.js</code></div>
+            <div role="cell">Tokens JWT, lógica de refresh, formato de errores FastAPI, localStorage</div>
+            <div role="cell">Ningún componente toca <code>localStorage</code> directamente</div>
+          </div>
+          <div class="table-row" role="row">
+            <div role="cell"><code>services/wompi.py</code></div>
+            <div role="cell">Algoritmo SHA-256, estructura de payload Wompi, navegación de paths anidados</div>
+            <div role="cell">El webhook solo llama <code>validar_firma_webhook()</code></div>
+          </div>
+          <div class="table-row" role="row">
+            <div role="cell"><code>services/notifications.py</code></div>
+            <div role="cell">API de Meta Cloud, modo sandbox, formato de componentes WhatsApp</div>
+            <div role="cell">Tres servicios llaman <code>send_whatsapp()</code> sin conocer credenciales</div>
+          </div>
+          <div class="table-row" role="row">
+            <div role="cell"><code>core/security.py</code></div>
+            <div role="cell">Algoritmo JWT, bcrypt, claims internos del token</div>
+            <div role="cell"><code>deps.py</code> solo llama <code>decode_access_token()</code></div>
+          </div>
+          <div class="table-row" role="row">
+            <div role="cell"><code>services/raffles.py</code><br><code>_reserva_vigente()</code></div>
+            <div role="cell">Lógica de vigencia de reserva: pagada + pendiente + expiración</div>
+            <div role="cell">Función privada usada en 4 funciones sin reexponerse</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Evidencias visuales Sección 2 -->
+      <div class="section-body">
+        <h3>Evidencias visuales de la anatomía</h3>
+        <div class="two-column">
+          <div>
+            <h4>Módulo profundo: <code>reserve_number()</code></h4>
+            <p>
+              Interfaz de una línea que oculta seis pasos internos.
+              Ejemplo literal de Deep Module según Ousterhout: la firma es
+              mínima, la implementación es extensa.
+            </p>
+            <img
+              src="evidencias/modulo-profundo.png"
+              alt="Captura de código de reserve_number mostrando interfaz simple e implementación compleja"
+              style="width:100%;border-radius:8px;margin-top:.75rem;"
+            >
+          </div>
+          <div>
+            <h4>Estructura final del repositorio</h4>
+            <p>
+              Arquitectura de carpetas: un archivo por responsabilidad
+              en <code>services/</code>, un test por issue en <code>tests/</code>,
+              issues cerradas en <code>issues/done/</code>. La estructura refleja
+              el principio de Information Hiding aplicado a nivel de módulos.
+            </p>
+            <img
+              src="evidencias/arquitectura.png"
+              alt="Captura de la estructura de carpetas del repositorio"
+              style="width:100%;border-radius:8px;margin-top:.75rem;"
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Comparación antes/después del refactor -->
+      <div class="section-body">
+        <h3>Comparación antes / después: refactor del Candidato 4</h3>
+        <p>
+          La directriz humana más impactante del proyecto fue eliminar los
+          efectos de escritura de las funciones de lectura. Este refactor
+          aplica directamente el principio de Information Hiding: las
+          funciones de lectura no deben conocer ni ejecutar operaciones de
+          escritura.
+        </p>
+        <div class="two-column">
+          <div class="code-card">
+            <h4>ANTES — escritura embebida en lectura</h4>
+            <pre><code># Cada función de lectura tenía un efecto de escritura
+def get_number_states(session, raffle):
+    expire_old_reservations(session, raffle.id)  # escribe BD
+    reservations = session.exec(...).all()
+    ...
+
+def get_raffle_detail(session, raffle):
+    expire_old_reservations(session, raffle.id)  # escribe BD
+    ...
+
+def reserve_number(session, raffle, payload):
+    expire_old_reservations(session, raffle.id)  # escribe BD
+    ...
+# Problema: si el scheduler corría en paralelo,
+# se podían producir escrituras duplicadas.</code></pre>
+          </div>
+          <div class="code-card">
+            <h4>DESPUÉS — lectura pura, escritura solo en scheduler</h4>
+            <pre><code># Función pura extraída por directriz humana
+def _reserva_vigente(r: Reservation,
+                     ahora: datetime) -&gt; bool:
+    if r.status == ReservationStatus.paid: return True
+    if r.status == ReservationStatus.pending:
+        return r.expires_at &gt; ahora
+    return False
+
+def get_number_states(session, raffle):
+    ahora = datetime.utcnow()
+    reservations = session.exec(...).all()
+    # Sin escrituras: vigencia calculada en memoria
+    vigentes = [r for r in reservations
+                if _reserva_vigente(r, ahora)]
+    ...
+# expire_old_reservations() ahora es exclusivo
+# del scheduler (cada 15 min). Sin conflictos.</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- Conclusión sección 2 -->
+      <div class="section-body two-column">
+        <div>
+          <h3>Conclusión de la sección</h3>
+          <p>
+            El proyecto muestra una arquitectura con buena tendencia hacia
+            módulos profundos en las capas de infraestructura y servicios
+            externos. Las funciones <code>request()</code>,
+            <code>send_whatsapp()</code>, <code>validar_firma_webhook()</code>
+            y <code>reserve_number()</code> son ejemplos claros donde interfaces
+            pequeñas ocultan implementaciones complejas.
+          </p>
+          <p>
+            Las tres fugas detectadas tienen un patrón común: la IA generó
+            código funcional pero sin evaluar el costo futuro de los acoplamientos
+            entre capas. Las directrices humanas documentadas en
+            <code>CLAUDE.md</code> fueron el mecanismo principal de corrección.
+          </p>
+        </div>
+        <div>
+          <h3>Oportunidades de mejora pendientes</h3>
+          <ul>
+            <li>
+              <strong>Eliminar HTTPException de los servicios:</strong>
+              la fuga más sistémica del proyecto. Los servicios no deben
+              conocer el protocolo HTTP.
+            </li>
+            <li>
+              <strong>Consolidar services/pagos.py:</strong> las dos funciones
+              podrían fusionarse en <code>services/raffles.py</code> o en un
+              módulo de estados de reserva más rico.
+            </li>
+            <li>
+              <strong>Cerrar la fuga del plazo en efectivo:</strong> el campo
+              <code>expires_at</code> ya existe en la respuesta del backend;
+              el frontend debe leerlo en lugar de hardcodear "5 días".
+            </li>
+            <li>
+              <strong>Abstraer la decisión de redirección a Wompi:</strong>
+              mover la condición <code>payment_method !== "cash"</code>
+              al backend para que el frontend solo reaccione a la presencia
+              o ausencia de <code>checkout_url</code>.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN 3: RETROSPECTIVA -->
+    <section id="retrospectiva" class="section-band">
+      <div class="section-body">
+        <p class="eyebrow">Sección 3</p>
+        <h2>Veredicto retrospectivo de los sub-agentes</h2>
+      </div>
+
+      <!-- Recuperación del checkpoint -->
+      <div class="section-body two-column">
+        <div>
+          <h3>Recuperación del Punto de Control Arquitectónico</h3>
+          <p>
+            El diagnóstico inicial (ver <code>architecture-checkpoint.md</code>
+            en la raíz del repositorio) se ejecutó sobre la rama <code>develop</code>
+            cuando ya existía el flujo base de rifas, reservas, pago en efectivo
+            e integración Wompi. La fricción principal detectada fue el riesgo de
+            agregar integraciones externas (Cloudinary, Meta Cloud API) directamente
+            en los routers FastAPI o en componentes de UI.
+          </p>
+          <p><strong>Candidatos de profundización detectados:</strong></p>
+          <ul>
+            <li><code>backend/app/services/raffles.py</code>: concentraba lógica de rifa, reserva y confirmación de pago.</li>
+            <li><code>backend/app/api/raffles.py</code>: exponía endpoints administrativos con riesgo de crecer al agregar lógica de archivos.</li>
+            <li><strong>Nuevo límite de integración:</strong> Cloudinary y Meta Cloud API requerían sandbox y manejo de errores robusto para no bloquear los flujos transaccionales.</li>
+          </ul>
+        </div>
+
+        <div class="evidence-panel">
+          <h3>Antes del Candidato 4</h3>
+          <pre><code># Efectos de escritura en funciones de lectura
+def get_number_states(session, raffle):
+    expire_old_reservations(session, raffle.id)  # escritura
+    reservations = session.exec(...).all()
+    ...
+
+def get_raffle_detail(session, raffle):
+    expire_old_reservations(session, raffle.id)  # escritura
+    ...</code></pre>
+          <h3>Después del Candidato 4</h3>
+          <pre><code># Lectura pura — escritura solo en el scheduler
+def _reserva_vigente(r: Reservation,
+                     ahora: datetime) -&gt; bool:
+    if r.status == ReservationStatus.paid: return True
+    if r.status == ReservationStatus.pending:
+        return r.expires_at &gt; ahora
+    return False
+
+def get_number_states(session, raffle):
+    ahora = datetime.utcnow()
+    reservations = session.exec(...).all()
+    vigentes = [r for r in reservations
+                if _reserva_vigente(r, ahora)]
+    ...</code></pre>
+        </div>
+      </div>
+
+      <!-- Debate de sub-agentes -->
+      <div class="section-body">
+        <h3>Debate de los tres sub-agentes</h3>
+        <div class="agent-grid">
+          <article>
+            <span>A</span>
+            <h3>Servicio de aplicación extendido</h3>
+            <pre><code>upload_prize_image(session, raffle, file) -&gt; Raffle
+confirm_cash_payment(session, raffle, reservation_id) -&gt; Reservation</code></pre>
+            <p><strong>Ventaja:</strong> los routers permanecen delgados y el flujo principal se mantiene en una sola capa de servicios.</p>
+            <p><strong>Riesgo:</strong> <code>services/raffles.py</code> podría crecer desproporcionadamente si todos los proveedores externos quedan allí.</p>
+          </article>
+          <article>
+            <span>B</span>
+            <h3>Puertos por integración</h3>
+            <pre><code>CloudinaryImageStore.upload(file) -&gt; str
+WhatsAppNotifier.send(template, phone, params) -&gt; bool</code></pre>
+            <p><strong>Ventaja:</strong> proveedores reemplazables y pruebas unitarias más limpias (mock directo).</p>
+            <p><strong>Riesgo:</strong> agrega más clases de las necesarias para dos issues pequeños (#10 y #11), incrementando la carga cognitiva inicial.</p>
+          </article>
+          <article>
+            <span>C</span>
+            <h3>Endpoints directos con helpers locales</h3>
+            <pre><code>POST /raffles/{id}/image
+PATCH /reservations/{id}/confirm-cash</code></pre>
+            <p><strong>Ventaja:</strong> implementación rápida, menor cantidad de archivos nuevos.</p>
+            <p><strong>Riesgo:</strong> reglas de validación, storage y notificación quedan mezcladas con FastAPI, dificultando los tests y la reutilización posterior.</p>
+          </article>
+        </div>
+      </div>
+
+      <!-- Decisiones adoptadas -->
+      <div class="section-body">
+        <h3>Decisiones adoptadas</h3>
+        <p>Se adoptó una <strong>solución híbrida: A con una parte de B</strong>.</p>
+        <div class="module-table" role="table">
+          <div class="table-row table-head" role="row">
+            <div role="columnheader">Recomendación</div>
+            <div role="columnheader">Implementación</div>
+            <div role="columnheader">Commit</div>
+          </div>
+          <div class="table-row" role="row">
+            <div role="cell">Extender <code>services/raffles.py</code> para flujo de rifa/reserva/pago</div>
+            <div role="cell"><code>upload_prize_image()</code> y <code>confirm_cash_payment()</code> viven allí</div>
+            <div role="cell"><code>f2e2f6b</code></div>
+          </div>
+          <div class="table-row" role="row">
+            <div role="cell">Puerto simple para WhatsApp</div>
+            <div role="cell"><code>services/notifications.py</code> con <code>send_whatsapp()</code></div>
+            <div role="cell"><code>f2e2f6b</code></div>
+          </div>
+          <div class="table-row" role="row">
+            <div role="cell">Fallos de WhatsApp no revierten pago</div>
+            <div role="cell"><code>send_whatsapp()</code> retorna <code>bool</code>, loguea error, no levanta excepción</div>
+            <div role="cell"><code>f2e2f6b</code></div>
+          </div>
+          <div class="table-row" role="row">
+            <div role="cell"><strong>Candidato 4 — Lectura pura</strong></div>
+            <div role="cell"><code>_reserva_vigente()</code> como función pura; <code>get_number_states()</code>, <code>get_raffle_detail()</code>, <code>get_raffle_stats()</code> y <code>reserve_number()</code> dejan de llamar <code>expire_old_reservations()</code></div>
+            <div role="cell"><code>53105fe</code></div>
+          </div>
+          <div class="table-row" role="row">
+            <div role="cell">Un módulo por caso de uso nuevo</div>
+            <div role="cell"><code>services/ganador.py</code> y <code>services/recordatorio.py</code></div>
+            <div role="cell"><code>7f94d57</code>, <code>4cd01ea</code></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Decisiones descartadas -->
+      <div class="section-body">
+        <h3>Decisiones descartadas</h3>
+        <div class="module-table" role="table">
+          <div class="table-row table-head" role="row">
+            <div role="columnheader">Decisión descartada</div>
+            <div role="columnheader">Razón</div>
+            <div role="columnheader">Deuda técnica registrada</div>
+          </div>
+          <div class="table-row" role="row">
+            <div role="cell">Sub-agente A puro (todo en <code>services/raffles.py</code>)</div>
+            <div role="cell">Evitar que el servicio de rifas absorbiera notificaciones y storage; se extrajo <code>notifications.py</code> como puerto.</div>
+            <div role="cell">Candidatos 1, 2 y 3 del checkpoint no aplicados. Documentado en <code>handoffs.md</code>.</div>
+          </div>
+          <div class="table-row" role="row">
+            <div role="cell">Sub-agente B puro (clases reemplazables por integración)</div>
+            <div role="cell">Para el alcance actual (#10 y #11) resultaba excesivo crear abstracciones de clase; una función pura con variables de entorno fue suficiente.</div>
+            <div role="cell">Si se agregan SMS, push o email, se deberá refactorizar <code>notifications.py</code> a un patrón de puertos formales.</div>
+          </div>
+          <div class="table-row" role="row">
+            <div role="cell">Sub-agente C (endpoints directos con lógica mezclada)</div>
+            <div role="cell">Rechazado explícitamente porque rompería la testabilidad y reutilización ya establecidas desde los issues #1–#9.</div>
+            <div role="cell">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Impacto en velocidad y elasticidad -->
+      <div class="section-body two-column">
+        <div>
+          <h3>Impacto en la velocidad de desarrollo</h3>
+          <p>El checkpoint <strong>aceleró</strong> el desarrollo de los issues finales:</p>
+          <ul>
+            <li>
+              <strong>#12 (recordatorio de pago):</strong> la existencia del puerto
+              <code>send_whatsapp()</code> permitió implementar el job diario en
+              <code>services/recordatorio.py</code> reutilizando la infraestructura
+              de #11 sin modificar confirmación de pago.
+            </li>
+            <li>
+              <strong>#13 (registro de ganador):</strong> el Candidato 4 (lectura
+              pura) hizo trivial agregar la validación de boleta pagada:
+              <code>register_winner()</code> consulta el estado directamente sin
+              preocuparse por side effects de expiración.
+            </li>
+            <li>
+              <strong>#14 (estadísticas):</strong> <code>get_raffle_stats()</code>
+              pudo reutilizar <code>_reserva_vigente()</code> y el cálculo de
+              estados ya existente, sin tocar routers ni modelos.
+            </li>
+          </ul>
+          <p>Los tres issues se cerraron en un solo sprint sin bloqueos arquitectónicos.</p>
+        </div>
+        <div>
+          <h3>Elasticidad de la arquitectura frente al cambio</h3>
+          <p>La arquitectura resultó <strong>flexible</strong> frente a los issues #12, #13 y #14:</p>
+          <ul>
+            <li><strong>#12:</strong> solo se agregó <code>services/recordatorio.py</code>, un campo <code>reminder_sent_at</code> en <code>Reservation</code> y una línea en el scheduler. Ni los routers ni la lógica de reserva existente fueron modificados.</li>
+            <li><strong>#13:</strong> se agregó <code>services/ganador.py</code>, un campo <code>winner_number</code> en <code>Raffle</code> y un endpoint en <code>api/raffles.py</code>. La notificación al ganador reutilizó <code>send_whatsapp()</code> sin cambiar <code>notifications.py</code>.</li>
+            <li><strong>#14:</strong> se agregaron dos funciones de lectura pura al servicio de rifas; el endpoint fue una línea de delegación.</li>
+          </ul>
+          <p>En ningún caso fue necesario modificar más de un módulo por capa.</p>
+        </div>
+      </div>
+
+      <!-- Change Amplification -->
+      <div class="section-body">
+        <h3>Change Amplification</h3>
+        <div class="leakage-grid">
+          <article>
+            <h3>No ocurrió Change Amplification significativo</h3>
+            <p>
+              Si <code>send_whatsapp()</code> hubiera estado embebido en
+              <code>confirm_cash_payment()</code>, agregar el recordatorio (#12)
+              o la notificación al ganador (#13) habría exigido modificar
+              <code>services/raffles.py</code>, encadenando cambios en tests
+              y routers. El puerto <code>services/notifications.py</code>
+              desacopló el envío de mensajes del flujo transaccional.
+            </p>
+          </article>
+          <article>
+            <h3>Fricción menor aceptada</h3>
+            <p>
+              La actualización del modelo <code>Reservation</code> con
+              <code>reminder_sent_at</code> requirió recrear la base de datos
+              de desarrollo (no hay migraciones automáticas configuradas aún),
+              pero esto es una limitación operativa, no de arquitectura. La
+              deuda de migraciones Alembic queda documentada para el próximo
+              sprint.
+            </p>
+          </article>
+          <article>
+            <h3>Cambio fácil vs. difícil</h3>
+            <p>
+              <strong>Fácil:</strong> agregar <code>POST /raffles/{id}/winner</code>
+              (#13). Un servicio nuevo de 48 líneas y un endpoint de 8 líneas,
+              sin tocar confirmación de pago ni reservas.<br><br>
+              <strong>Difícil (pre-checkpoint):</strong> confirmar pago con
+              notificación WhatsApp (#11). Sin la decisión híbrida, habría
+              requerido modificar el mismo archivo que manejaba reservas,
+              estadísticas y notificaciones.
+            </p>
+          </article>
+        </div>
+      </div>
+
+      <!-- Veredicto final -->
+      <div class="section-body two-column">
+        <div class="verdict">
+          <h3>Veredicto final</h3>
+          <p>
+            <strong>Fue una buena arquitectura para el alcance del sprint.</strong>
+          </p>
+          <p>
+            El debate de sub-agentes <strong>agregó valor real</strong>, no fue
+            ceremonial: obligó a rechazar la tentación de implementar rápido
+            (Sub-agente C) y a encontrar un equilibrio entre extensibilidad y
+            simplicidad (híbrido A+B).
+          </p>
+          <p>
+            La decisión de mantener funciones puras para lectura
+            (<code>_reserva_vigente</code>) pagó dividendos inmediatos en #12,
+            #13 y #14: los nuevos endpoints de estadísticas y ganador no
+            requirieron preocuparse por expiraciones ni transacciones de escritura.
+          </p>
+        </div>
+        <div>
+          <h3>Qué habríamos diseñado diferente</h3>
+          <ul>
+            <li>
+              <strong>Puerto formal desde #11:</strong> haber establecido
+              <code>services/notifications.py</code> como clase abstracta o
+              protocolo desde el inicio, para que la deuda de "función pura
+              vs. clase reemplazable" no existiera.
+            </li>
+            <li>
+              <strong>Migraciones Alembic desde el scaffold (#1):</strong>
+              para evitar recreaciones manuales de la BD al agregar campos
+              como <code>reminder_sent_at</code> y <code>winner_number</code>.
+            </li>
+            <li>
+              <strong>Módulo <code>services/ports/</code> desde el inicio:</strong>
+              para que cada integración externa (Wompi, Cloudinary, Meta) tuviera
+              su propio contrato explícito y fuera reemplazable sin monkeypatching.
+            </li>
+          </ul>
+          <p>
+            <strong>Evidencias:</strong> <code>architecture-checkpoint.md</code>
+            en la raíz del repositorio resume el diagnóstico, las tres propuestas
+            y la justificación técnica de la híbrida. Tests: 33 passed en
+            <code>f2e2f6b</code> (#10–#11); 50 passed en <code>4cd01ea</code>
+            (cierre de sprint).
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ENTREGA -->
+    <section id="entrega" class="section-band delivery-band">
+      <div class="section-body">
+        <div class="section-heading">
+          <p class="eyebrow">Entregables requeridos</p>
+          <h2>Cierre de la entrega final</h2>
+        </div>
+
+        <div class="delivery-list">
+          <article>
+            <h3>Repositorio limpio</h3>
+            <p>
+              Todas las issues cerradas y movidas a <code>issues/done/</code>.
+              50 tests pasando en el backend. Build del frontend verde.
+              Rama <code>main</code> como base estable del repositorio.
+            </p>
+            <a href="https://github.com/1531nana/rifas-app/tree/main">Ver rama main</a>
+          </article>
+          <article>
+            <h3>Sitio de documentación</h3>
+            <p>
+              Este archivo es el sitio estático del Software Journey dentro
+              de <code>/docs</code>, desplegado vía GitHub Pages desde
+              la carpeta <code>docs</code> de la rama <code>main</code>.
+            </p>
+            <a href="./index.html">Abrir Software Journey</a>
+          </article>
+          <article>
+            <h3>Checkpoint arquitectónico</h3>
+            <p>
+              El archivo <code>architecture-checkpoint.md</code> en la raíz del
+              repositorio registra el diagnóstico, las tres propuestas de los
+              sub-agentes, la solución híbrida adoptada y los candidatos
+              descartados como deuda técnica.
+            </p>
+            <a href="https://github.com/1531nana/rifas-app/blob/main/architecture-checkpoint.md">Ver en GitHub</a>
+          </article>
+          <article>
+            <h3>Evidencia de tests</h3>
+            <p>
+              50 tests distribuidos en 14 archivos, uno por issue.
+              Ciclo rojo-verde-refactor documentado en cada handoff.
+              Ver carpeta <code>backend/tests/</code>.
+            </p>
+            <a href="https://github.com/1531nana/rifas-app/tree/main/backend/tests">Ver tests</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- EVIDENCIAS -->
+    <section id="evidencias" class="section-band">
+      <div class="section-body">
+        <div class="section-heading">
+          <p class="eyebrow">Evidencias visuales</p>
+          <h2>Capturas del proyecto en funcionamiento</h2>
+          <p>
+            Evidencia del estado final del proyecto: suite de pruebas pasando
+            al 100%, estructura del repositorio y flujo completo de la aplicación.
+          </p>
+        </div>
+
+        <div class="two-column">
+          <div>
+            <h3>Suite de pruebas — 50 passed</h3>
+            <p>
+              Resultado de <code>PYTHONPATH=. pytest --tb=short</code>
+              en la carpeta <code>backend/</code>. Cero fallos, cero errores.
+              14 archivos de test, uno por issue (#1–#14).
+            </p>
+            <img
+              src="evidencias/pruebas.png"
+              alt="Captura de terminal mostrando 50 tests pasando"
+              style="width:100%;border-radius:8px;margin-top:1rem;"
+            >
+          </div>
+          <div>
+            <h3>Estructura del repositorio</h3>
+            <p>
+              Arquitectura final del proyecto en <code>main</code>:
+              carpetas <code>backend/</code>, <code>frontend/</code>,
+              <code>docs/</code>, <code>issues/done/</code> y archivos
+              de configuración en la raíz.
+            </p>
+            <img
+              src="evidencias/arquitectura.png"
+              alt="Captura de la estructura de carpetas del repositorio"
+              style="width:100%;border-radius:8px;margin-top:1rem;"
+            >
+          </div>
+        </div>
+
+        <div class="two-column" style="margin-top:2rem;">
+          <div>
+            <h3>Módulo profundo — interfaz mínima, implementación compleja</h3>
+            <p>
+              Ejemplo de Deep Module según Ousterhout: una firma simple
+              que oculta validación de estado, detección de conflictos,
+              cálculo de expiración y persistencia en base de datos.
+            </p>
+            <img
+              src="evidencias/modulo-profundo.png"
+              alt="Captura de código mostrando un módulo profundo"
+              style="width:100%;border-radius:8px;margin-top:1rem;"
+            >
+          </div>
+        </div>
+
+        <div class="section-heading" style="margin-top:3rem;">
+          <h3>Flujo completo de la aplicación</h3>
+          <p>Capturas del sistema funcionando de extremo a extremo: registro de admin, creación de rifa, vista del comprador, reserva, pago por Wompi y confirmación.</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(480px,1fr));gap:2rem;margin-bottom:3rem;">
+          <figure style="margin:0;">
+            <img src="evidencias/flujo-app/1crear-cuenta.png" alt="Paso 1: Crear cuenta de administrador" style="width:100%;border-radius:8px;">
+            <figcaption style="font-size:.85rem;margin-top:.4rem;color:var(--muted);">1 — Crear cuenta de administrador</figcaption>
+          </figure>
+          <figure style="margin:0;">
+            <img src="evidencias/flujo-app/2crear-rifa.png" alt="Paso 2: Crear rifa" style="width:100%;border-radius:8px;">
+            <figcaption style="font-size:.85rem;margin-top:.4rem;color:var(--muted);">2 — Crear rifa</figcaption>
+          </figure>
+          <figure style="margin:0;">
+            <img src="evidencias/flujo-app/3detalle-rifa-vendedor-despues-crear-boleta.png" alt="Paso 3: Detalle de la rifa desde el vendedor" style="width:100%;border-radius:8px;">
+            <figcaption style="font-size:.85rem;margin-top:.4rem;color:var(--muted);">3 — Detalle de la rifa (vista vendedor)</figcaption>
+          </figure>
+          <figure style="margin:0;">
+            <img src="evidencias/flujo-app/4comprar-boleta-comprador.png" alt="Paso 4: Vista del comprador — grilla de números" style="width:100%;border-radius:8px;">
+            <figcaption style="font-size:.85rem;margin-top:.4rem;color:var(--muted);">4 — Grilla de números (vista comprador)</figcaption>
+          </figure>
+          <figure style="margin:0;">
+            <img src="evidencias/flujo-app/5Formulario-boleta-comprador.png" alt="Paso 5: Formulario de datos del comprador" style="width:100%;border-radius:8px;">
+            <figcaption style="font-size:.85rem;margin-top:.4rem;color:var(--muted);">5 — Formulario de datos del comprador</figcaption>
+          </figure>
+          <figure style="margin:0;">
+            <img src="evidencias/flujo-app/6metodo-pago-wompi.png" alt="Paso 6: Selección de método de pago Wompi" style="width:100%;border-radius:8px;">
+            <figcaption style="font-size:.85rem;margin-top:.4rem;color:var(--muted);">6 — Método de pago Wompi</figcaption>
+          </figure>
+          <figure style="margin:0;">
+            <img src="evidencias/flujo-app/7pago-exitoso-wompi.png" alt="Paso 7: Pago exitoso en Wompi" style="width:100%;border-radius:8px;">
+            <figcaption style="font-size:.85rem;margin-top:.4rem;color:var(--muted);">7 — Pago exitoso</figcaption>
+          </figure>
+          <figure style="margin:0;">
+            <img src="evidencias/flujo-app/8compra-boletas-con-1-vendida-comprador.png" alt="Paso 8: Grilla con boleta vendida (vista comprador)" style="width:100%;border-radius:8px;">
+            <figcaption style="font-size:.85rem;margin-top:.4rem;color:var(--muted);">8 — Grilla con boleta vendida (comprador)</figcaption>
+          </figure>
+          <figure style="margin:0;">
+            <img src="evidencias/flujo-app/9detalle-rifa-vendedor-1-vendida.png" alt="Paso 9: Detalle de la rifa con boleta vendida (vista vendedor)" style="width:100%;border-radius:8px;">
+            <figcaption style="font-size:.85rem;margin-top:.4rem;color:var(--muted);">9 — Detalle con boleta vendida (vendedor)</figcaption>
+          </figure>
+        </div>
+
+        <div class="section-heading" style="margin-top:1rem;">
+          <h3>Funcionalidades cerradas — Issues #1 al #14</h3>
+        </div>
+        <div class="delivery-list">
+          <article>
+            <h3>#1 y #2 — Scaffold y autenticación</h3>
+            <p>FastAPI + React + PostgreSQL. JWT con refresh token. Rutas protegidas en frontend y backend.</p>
+          </article>
+          <article>
+            <h3>#3 — CRUD de rifas</h3>
+            <p>Creación, edición y listado de rifas por admin. <code>public_token</code> generado automáticamente. Restricción de edición si hay reservas activas.</p>
+          </article>
+          <article>
+            <h3>#4 y #5 — Vista pública y grilla</h3>
+            <p>Página pública <code>/r/{token}</code> sin login. Grilla de números con estados available/reserved/sold en colores.</p>
+          </article>
+          <article>
+            <h3>#6, #7 y #8 — Reserva y pagos</h3>
+            <p>Reserva con conflicto 409. Checkout Wompi con validación de firma SHA-256. Confirmación de efectivo por el admin.</p>
+          </article>
+          <article>
+            <h3>#9 — Expiración automática</h3>
+            <p>Job cada 15 minutos que marca reservas vencidas. Verificación lazy complementaria en endpoints de lectura.</p>
+          </article>
+          <article>
+            <h3>#10 y #11 — Imagen y WhatsApp</h3>
+            <p>Imagen de premio con validación JPG/PNG/WebP hasta 5MB. Notificación WhatsApp vía Meta Cloud API con modo sandbox.</p>
+          </article>
+          <article>
+            <h3>#12 — Recordatorio de pago</h3>
+            <p>Job diario que envía WhatsApp a compradores con reserva pendiente cuando la rifa sortea en 15 días.</p>
+          </article>
+          <article>
+            <h3>#13 y #14 — Ganador y estadísticas</h3>
+            <p>Registro del número ganador con notificación al comprador. Dashboard con conteos, recaudo y lista de compradores por estado.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    const SECTIONS = ['teoria','tracer','modulos','retrospectiva','entrega','evidencias'];
+
+    function navigate() {
+      const hash = window.location.hash.replace('#','') || 'hero';
+
+      // Mostrar u ocultar hero según sección activa
+      const hero = document.querySelector('.hero');
+      hero.style.display = (hash === 'hero' || hash === 'inicio') ? '' : 'none';
+
+      // Mostrar solo la sección correspondiente
+      SECTIONS.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (hash === 'hero' || hash === 'inicio') {
+          // Inicio: mostrar marco teórico, ocultar el resto
+          el.style.display = (id === 'teoria') ? '' : 'none';
+        } else {
+          el.style.display = (id === hash) ? '' : 'none';
+        }
+      });
+
+      // Marcar enlace activo en el nav
+      document.querySelectorAll('nav a').forEach(a => {
+        const target = a.getAttribute('href').replace('#','');
+        const isActive = target === hash
+          || (hash === 'hero' && target === 'teoria')
+          || (hash === 'inicio' && target === 'teoria');
+        a.style.fontWeight = isActive ? '700' : '';
+        a.style.color = isActive ? 'var(--ink)' : '';
+      });
+
+      window.scrollTo(0, 0);
+    }
+
+    window.addEventListener('hashchange', navigate);
+    document.addEventListener('DOMContentLoaded', navigate);
+  </script>
+</body>
+</html>

@@ -1,11 +1,21 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlmodel import Session, select
 
 from app.api.deps import get_current_admin
 from app.core.database import get_session
-from app.models.domain import Admin, Raffle
-from app.models.schemas import RaffleCreate, RaffleDetailRead, RaffleRead, ReservationRead
-from app.services.raffles import confirm_cash_payment, create_raffle, get_owned_raffle, get_raffle_detail
+from app.models.domain import Admin, Raffle, Reservation
+from app.models.schemas import BuyerRead, RaffleCreate, RaffleDetailRead, RaffleRead, RaffleStatsRead, RaffleUpdate, RegisterWinnerRequest, ReservationRead
+from app.services.ganador import register_winner
+from app.services.raffles import (
+    confirm_cash_payment,
+    create_raffle,
+    get_owned_raffle,
+    get_raffle_buyers,
+    get_raffle_detail,
+    get_raffle_stats,
+    update_raffle,
+    upload_prize_image,
+)
 
 router = APIRouter(prefix="/raffles", tags=["raffles"])
 
@@ -35,6 +45,87 @@ def get_raffle_endpoint(
 ) -> RaffleDetailRead:
     raffle = get_owned_raffle(session, current_admin.id or 0, raffle_id)
     return get_raffle_detail(session, raffle)
+
+
+@router.patch("/{raffle_id}", response_model=RaffleRead)
+def update_raffle_endpoint(
+    raffle_id: int,
+    payload: RaffleUpdate,
+    current_admin: Admin = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+) -> Raffle:
+    raffle = get_owned_raffle(session, current_admin.id or 0, raffle_id)
+    return update_raffle(session, raffle, payload)
+
+
+@router.get("/{raffle_id}/stats", response_model=RaffleStatsRead)
+def get_raffle_stats_endpoint(
+    raffle_id: int,
+    current_admin: Admin = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+) -> RaffleStatsRead:
+    raffle = get_owned_raffle(session, current_admin.id or 0, raffle_id)
+    return get_raffle_stats(session, raffle)
+
+
+@router.get("/{raffle_id}/buyers", response_model=list[BuyerRead])
+def get_raffle_buyers_endpoint(
+    raffle_id: int,
+    current_admin: Admin = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+) -> list[BuyerRead]:
+    raffle = get_owned_raffle(session, current_admin.id or 0, raffle_id)
+    return get_raffle_buyers(session, raffle)
+
+
+@router.post("/{raffle_id}/winner", response_model=RaffleRead)
+def register_winner_endpoint(
+    raffle_id: int,
+    payload: RegisterWinnerRequest,
+    current_admin: Admin = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+) -> Raffle:
+    raffle = get_owned_raffle(session, current_admin.id or 0, raffle_id)
+    return register_winner(session, raffle, payload)
+
+
+@router.post("/{raffle_id}/image", response_model=RaffleRead)
+def upload_raffle_image_endpoint(
+    raffle_id: int,
+    file: UploadFile = File(...),
+    current_admin: Admin = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+) -> Raffle:
+    raffle = get_owned_raffle(session, current_admin.id or 0, raffle_id)
+    return upload_prize_image(session, raffle, file)
+
+
+@router.patch("/reservations/{reservation_id}/confirm-cash", response_model=ReservationRead)
+def confirm_cash_payment_by_reservation_endpoint(
+    reservation_id: int,
+    current_admin: Admin = Depends(get_current_admin),
+    session: Session = Depends(get_session),
+):
+    # First get the reservation to verify it exists and get its raffle_id
+    reservation = session.exec(
+        select(Reservation).where(Reservation.id == reservation_id)
+    ).first()
+
+    if not reservation:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reserva no encontrada")
+
+    # Then verify the admin owns the raffle associated with this reservation
+    raffle = session.exec(
+        select(Raffle).where(
+            Raffle.id == reservation.raffle_id,
+            Raffle.admin_id == current_admin.id
+        )
+    ).first()
+
+    if not raffle:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No tienes permiso para confirmar este pago")
+
+    return confirm_cash_payment(session, raffle, reservation_id)
 
 
 @router.post("/{raffle_id}/reservations/{reservation_id}/confirm-cash", response_model=ReservationRead)

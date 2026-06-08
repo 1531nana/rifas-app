@@ -1,8 +1,9 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 from app.models.domain import PaymentMethod, RaffleStatus, ReservationStatus
+from app.models.validators import validate_phone
 
 
 class AdminCreate(BaseModel):
@@ -18,7 +19,12 @@ class AdminLogin(BaseModel):
 
 class TokenResponse(BaseModel):
     access_token: str
+    refresh_token: str
     token_type: str = "bearer"
+
+
+class RefreshRequest(BaseModel):
+    refresh_token: str
 
 
 class RaffleCreate(BaseModel):
@@ -29,6 +35,10 @@ class RaffleCreate(BaseModel):
     prize_description: str = Field(min_length=5)
     draw_date: datetime
     prize_image_url: str | None = None
+
+
+class RegisterWinnerRequest(BaseModel):
+    number: int = Field(ge=0)
 
 
 class RaffleRead(BaseModel):
@@ -44,6 +54,7 @@ class RaffleRead(BaseModel):
     prize_image_url: str | None
     public_token: str
     status: RaffleStatus
+    winner_number: int | None = None
 
 
 class NumberState(BaseModel):
@@ -62,6 +73,11 @@ class ReservationCreate(BaseModel):
     buyer_email: EmailStr | None = None
     payment_method: PaymentMethod
 
+    @field_validator("buyer_phone")
+    @classmethod
+    def phone_formato_internacional(cls, v: str) -> str:
+        return validate_phone(v)
+
 
 class ReservationRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -75,6 +91,39 @@ class ReservationRead(BaseModel):
     payment_method: PaymentMethod
     status: ReservationStatus
     expires_at: datetime
+    paid_at: datetime | None = None
+
+
+class RaffleUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=3, max_length=160)
+    lottery_type: str | None = Field(default=None, min_length=2, max_length=80)
+    total_numbers: int | None = Field(default=None, ge=10, le=10000)
+    ticket_price: int | None = Field(default=None, gt=0)
+    prize_description: str | None = Field(default=None, min_length=5)
+    draw_date: datetime | None = None
+    prize_image_url: str | None = None
+
+
+class RaffleStatsRead(BaseModel):
+    total_numbers: int
+    sold_count: int
+    reserved_count: int
+    available_count: int
+    paid_total: int
+    pending_payments: int
+
+
+class BuyerRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    number: int
+    buyer_name: str
+    buyer_phone: str
+    buyer_email: EmailStr | None
+    payment_method: PaymentMethod
+    status: ReservationStatus
+    paid_at: datetime | None = None
 
 
 class RaffleDetailRead(RaffleRead):
